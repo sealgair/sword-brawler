@@ -33,6 +33,16 @@ function forbox(sx, sy, w, h, callback)
   end
 end
 
+function common(l)
+ local t, m, mv = {}, 0, nil
+ for v in all(l) do
+  local c = (t[v] or 0) + 1
+  t[v] = c
+  if (c > m) m=c mv = v
+ end
+ return mv
+end
+
 -- class maker
 function class(proto, base)
  proto = proto or {}
@@ -43,6 +53,7 @@ function class(proto, base)
    local self = setmetatable({
     type=proto
    }, proto)
+   -- TODO: figure out how to do super
    -- self.super = base
    if(self.init) self:init(...)
    return self
@@ -79,7 +90,6 @@ player = mob.subclass({
  sprite=1,
  swordsprite=17,
  joincolor=14,
- joinrepl=6
 })
 
 function player:init(p, x, y)
@@ -92,6 +102,12 @@ function player:init(p, x, y)
  forbox(hand.x, hand.y, 8, 8, function(x,y)
    if sget(x,y) == self.joincolor then
     self.swoff = {x=x-hand.x, y=y-hand.y}
+    local colors = {}
+    forbox(-1, -1, 3, 3, function(dx, dy)
+     local c = sget(x+dx, y+dy)
+     if (c ~= 0) add(colors, c)
+    end)
+    sset(x,y, common(colors))
     return 1
    end
  end)
@@ -101,6 +117,12 @@ function player:init(p, x, y)
    if sget(x,y) == self.joincolor then
     self.swoff.x = self.swoff.x - (x-hilt.x)
     self.swoff.y = self.swoff.y - (y-hilt.y)
+    local colors = {}
+    forbox(-1, -1, 3, 3, function(dx, dy)
+     local c = sget(x+dx, y+dy)
+     if (c ~= 0) add(colors, c)
+    end)
+    sset(x,y, common(colors))
     return 1
    end
  end)
@@ -127,7 +149,6 @@ function player:update()
 end
 
 function player:draw()
- pal(self.joincolor, self.joinrepl)
  -- self.super.draw(self)
  mob.draw(self)
  local swx = self.swoff.x
@@ -135,7 +156,6 @@ function player:draw()
   swx = -swx
  end
  spr(self.swordsprite, self.x + swx, self.y + self.swoff.y, 1, 1, self.flipped, false)
- pal()
 end
 
 -- specific players
