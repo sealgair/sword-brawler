@@ -66,20 +66,44 @@ function sprite:drawwith(other, x, y, flipx, flipy)
   other:draw(x, y, flipx, flipy)
 end
 
+animation = sprite.subclass()
+
+function animation:init(sprites)
+  self.sprites = map(sprites, sprite)
+  self:start(0)
+end
+
+function animation:start(d)
+  self.d = d
+  self.t = d
+  self:advance(0)
+end
+
+function animation:advance(dt)
+  self.t = max(0, self.t-dt)
+  local i = 1
+  if self.t ~= 0 then
+    i = max(ceil((1-(self.t / self.d)) * #self.sprites), 1)
+  end
+  self.sprite = self.sprites[i]
+  self.join = self.sprite.join
+end
+
+function animation:draw(...)
+  self.sprite:draw(...)
+end
+
 -- player
 player = mob.subclass({
   sprite=1,
-  swordsprite=17,
-  swingsprites=range(17, 19),
+  swordsprite=range(17, 19),
 })
 
 function player:init(p, x, y)
   -- self.super.init(self, x, y)
   mob.init(self, x, y)
   self.sprite = sprite(self.sprite)
-  self.swordsprite = sprite(self.swordsprite)
-  self.swingsprites = map(self.swingsprites, sprite)
-  self.attacking = 0
+  self.swordsprite = animation(self.swordsprite)
   self.p = p-1
 end
 
@@ -102,19 +126,15 @@ function player:update()
   end
   self.y = bound(self.y, 58, 120)
 
-  if self.attacking <= 0 then
-    if (btnp(btns.atk, self.p)) self.attacking=1
+  if self.swordsprite.t <= 0 then
+    if (btnp(btns.atk, self.p)) self.swordsprite:start(0.5)
   else
-    self.attacking = max(self.attacking-dt, 0)
+    self.swordsprite:advance(dt)
   end
 end
 
 function player:draw()
   local swordsprite = self.swordsprite
-  if self.attacking > 0 then
-    --TODO: this needs work
-    swordsprite = self.swingsprites[1+flr((#self.swingsprites)*(1-self.attacking)*.99)]
-  end
   self.sprite:drawwith(swordsprite, self.x, self.y, self.flipped)
 end
 
@@ -122,15 +142,13 @@ end
 
 blueplayer = player.subclass({
   sprite=1,
-  swordsprite=17,
-  swingsprites=range(17, 19),
+  swordsprite=range(17, 19),
   speed=1.2
 })
 
 orangeplayer = player.subclass({
   sprite=33,
-  swordsprite=49,
-  swingsprites=range(49, 51),
+  swordsprite=range(49, 51),
   speed=1
 })
 
