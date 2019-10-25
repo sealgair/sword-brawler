@@ -23,8 +23,8 @@ end
 
 function map(l, fn)
   local new = {}
-  for i in all(l) do
-    add(new, fn(i))
+  for k,v in pairs(l) do
+    new[k] = fn(v)
   end
   return new
 end

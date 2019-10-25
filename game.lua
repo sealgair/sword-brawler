@@ -95,15 +95,22 @@ end
 
 -- player
 player = mob.subclass({
-  sprite=1,
-  swordsprite=range(17, 19),
+  sprites={
+    walk=1,
+    sword=range(17, 19),
+  }
 })
 
 function player:init(p, x, y)
   -- self.super.init(self, x, y)
   mob.init(self, x, y)
-  self.sprite = sprite(self.sprite)
-  self.swordsprite = animation(self.swordsprite)
+  self.sprites = map(self.sprites, function(s)
+    if type(s) == "table" then
+      return animation(s)
+    else
+      return sprite(s)
+    end
+  end)
   self.p = p-1
 end
 
@@ -126,29 +133,32 @@ function player:update()
   end
   self.y = bound(self.y, 58, 120)
 
-  if self.swordsprite.t <= 0 then
-    if (btnp(btns.atk, self.p)) self.swordsprite:start(0.5)
+  if self.sprites.sword.t <= 0 then
+    if (btnp(btns.atk, self.p)) self.sprites.sword:start(0.5)
   else
-    self.swordsprite:advance(dt)
+    self.sprites.sword:advance(dt)
   end
 end
 
 function player:draw()
-  local swordsprite = self.swordsprite
-  self.sprite:drawwith(swordsprite, self.x, self.y, self.flipped)
+  self.sprites.walk:drawwith(self.sprites.sword, self.x, self.y, self.flipped)
 end
 
 -- specific players
 
 blueplayer = player.subclass({
-  sprite=1,
-  swordsprite=range(17, 19),
+  sprites={
+    walk=1,
+    sword=range(17, 19),
+  },
   speed=1.2
 })
 
 orangeplayer = player.subclass({
-  sprite=33,
-  swordsprite=range(49, 51),
+  sprites={
+    walk=33,
+    sword=range(49, 51),
+  },
   speed=1
 })
 
