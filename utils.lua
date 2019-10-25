@@ -12,6 +12,14 @@ function bound(v, low, high)
  return min(max(v, low), high)
 end
 
+function yesno(condition, yes, no)
+  if condition then
+    return yes
+  else
+    return no
+  end
+end
+
 function sscoord(s)
  return {
   x = (s%16)*8,
