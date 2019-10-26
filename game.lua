@@ -9,112 +9,126 @@ btns={
 dt = 1/30
 
 -- mob definition
-mob = class({
-  x=0, y=0, flipped=false,
-  sprite=0,
-})
 mobs = {}
 
+mob = class({
+  x=0, y=0,
+  w=8, h=8,
+  flipped=false,
+  sprites={
+    default=1,
+  },
+  withsprites={},
+})
+
+function makesprite(s)
+  if type(s) == "table" then
+    return animation(s)
+  else
+    return sprite(s)
+  end
+end
+
 function mob:init(x, y)
+  add(mobs, self)
   self.x = x
   self.y = y
-  add(mobs, self)
+
+  self.sprites = map(self.sprites, makesprite)
+  self.withsprites = map(self.withsprites, makesprite)
+
+  self.sm = mobstatemachine(self)
+end
+
+function mob:getsprite()
+  return self.sprites[self.sm.state] or self.sprites.default
+end
+
+function mob:getwithsprite()
+  return self.withsprites[self.sm.state] or self.withsprites.default
+end
+
+function mob:enter_state(state, timeout)
+  if timeout ~= nil and timeout > 0 then
+    local sprite = self:getsprite()
+    if (sprite.start) sprite:start(timeout)
+    local withsprite = self:getwithsprite()
+    if (withsprite.start) withsprite:start(timeout)
+  end
 end
 
 function mob:draw()
-  spr(self.sprite, self.x, self.y, 1, 1, self.flipped, false)
+  local sprite = self:getsprite()
+  local withsprite = self:getwithsprite()
+  if withsprite ~= nil then
+    sprite:drawwith(withsprite, self.x, self.y, self.flipped)
+  else
+    sprite:draw(self.x, self.y, self.flipped)
+  end
 end
 
 function mob:update()
-end
-
--- sprite helpers
-
-sprite = class()
-
-function sprite:init(n, joincolor, w, h)
-  self.n = n
-  self.joincolor = joincolor or 14
-  self.w = w or 1
-  self.h = h or 1
-
-  local orig = sscoord(self.n)
-  forbox(orig.x, orig.y, 8, 8, function(x,y)
-    if sget(x,y) == self.joincolor then
-      self.join = {x=x-orig.x, y=y-orig.y}
-      local colors = {}
-      forbox(-1, -1, 3, 3, function(dx, dy)
-        local c = sget(x+dx, y+dy)
-        if (c ~= 0) add(colors, c)
-      end)
-      self.joinrepl = common(colors)
-      return 1
-    end
-  end)
-end
-
-function sprite:draw(x, y, ...)
-  pal(self.joincolor, self.joinrepl)
-  spr(self.n, x, y, self.w, self.h, ...)
-  pal()
-end
-
-function sprite:drawwith(other, x, y, flipx, flipy)
-  self:draw(x, y, flipx, flipy)
-  x = x + (self.join.x - other.join.x) * yesno(flipx, -1, 1)
-  y = y + (self.join.y - other.join.y) * yesno(flipy, -1, 1)
-  other:draw(x, y, flipx, flipy)
-end
-
-animation = sprite.subclass()
-
-function animation:init(sprites)
-  self.sprites = map(sprites, sprite)
-  self:start(0)
-end
-
-function animation:start(d)
-  self.d = d
-  self.t = d
-  self:advance(0)
-end
-
-function animation:advance(dt)
-  self.t = max(0, self.t-dt)
-  local i = 1
-  if self.t ~= 0 then
-    i = max(ceil((1-(self.t / self.d)) * #self.sprites), 1)
+  self.sm:update(dt)
+  local sprite = self:getsprite()
+  if (sprite.advance) sprite:advance(dt)
+  local withsprite = self:getwithsprite()
+  if (withsprite.advance) withsprite:advance(dt)
+  if self.dead then
+    del(mobs, self)
   end
-  self.sprite = self.sprites[i]
-  self.join = self.sprite.join
 end
 
-function animation:draw(...)
-  self.sprite:draw(...)
+function mob:collides(hitbox)
+  if (not hitbox) hitbox = {x=self.x, y=self.y, w=self.w, h=self.h}
+  local hits = {}
+  for mob in all(mobs) do
+    if mob ~= self then
+      -- check boxes for overlap
+      if (between(hitbox.x, mob.x, mob.x+mob.w) or
+            between(hitbox.x+hitbox.w, mob.x, mob.x+mob.w)) and
+         (between(hitbox.y, mob.y, mob.y+mob.h) or
+            between(hitbox.y+hitbox.h, mob.y, mob.y+mob.h)) then
+        add(hits, mob)
+      end
+    end
+  end
+  return hits
 end
 
--- player
-player = mob.subclass({
-  sprites={
-    walk=1,
-    sword=range(17, 19),
-  }
-})
+function mob:strike()
+  local hitbox = {x=self.x+8, y=self.y+2, w=8, h=4}
+  if (self.flipped) hitbox.x -= 16
+  local hits = self:collides(hitbox)
+  for hit in all(hits) do
+    hit:hit()
+    self.sm:transition("strike", 0.1)
+  end
+  if #hits > 0 then
+    self.sm:transition("strike")
+  else
+    self.sm:transition("miss")
+  end
+end
+
+function mob:hit(heavy)
+  if heavy then
+    self.sm:transition('heavyhit')
+  else
+    self.sm:transition('hit')
+  end
+end
+
+-- player definition
+player = mob.subclass()
 
 function player:init(p, x, y)
   -- self.super.init(self, x, y)
   mob.init(self, x, y)
-  self.sprites = map(self.sprites, function(s)
-    if type(s) == "table" then
-      return animation(s)
-    else
-      return sprite(s)
-    end
-  end)
   self.p = p-1
 end
 
 function player:update()
+  mob.update(self)
   if btn(btns.l, self.p) then
     self.x = self.x - self.speed
     self.flipped = true
@@ -133,34 +147,55 @@ function player:update()
   end
   self.y = bound(self.y, 58, 120)
 
-  if self.sprites.sword.t <= 0 then
-    if (btnp(btns.atk, self.p)) self.sprites.sword:start(0.5)
-  else
-    self.sprites.sword:advance(dt)
+  if btnp(btns.atk, self.p) then
+    self.sm:transition("attack", 0.5)
   end
 end
 
-function player:draw()
-  self.sprites.walk:drawwith(self.sprites.sword, self.x, self.y, self.flipped)
-end
+-- function player:draw()
+--   mob.draw(self)
+--   print("st: "..self.sm.state, 64*self.p, 5)
+--   local ws = self:getwithsprite()
+--   if (ws and ws.t) print("anim timer: "..ws.t, 64*self.p, 11)
+-- end
 
 -- specific players
 
 blueplayer = player.subclass({
   sprites={
-    walk=1,
-    sword=range(17, 19),
+    default=1,
+  },
+  withsprites={
+    default=17,
+    attacking=range(17, 19),
+    striking=19,
+    staggered=16,
+    stunned=20,
+    overextended=20,
   },
   speed=1.2
 })
 
 orangeplayer = player.subclass({
   sprites={
-    walk=33,
-    sword=range(49, 51),
+    default=33,
+  },
+  withsprites={
+    default=49,
+    attacking=range(49, 51),
+    striking=51,
+    staggered=48,
+    stunned=52,
+    overextended=52,
   },
   speed=1
 })
+
+-- map (TODO)
+function draw_bg()
+  rectfill(0,0,128,128,12)
+  rectfill(0,64,128,128,15)
+end
 
 -- system callbacks
 
@@ -175,15 +210,10 @@ function _update()
   end
 end
 
-function draw_bg()
-  rectfill(0,0,128,128,12)
-  rectfill(0,64,128,128,15)
-end
-
 function _draw()
   draw_bg()
   for m in all(mobs) do
-    -- todo: sort
+    -- todo: sort by y, then x
     m:draw()
   end
 end

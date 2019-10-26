@@ -2,6 +2,8 @@ pico-8 cartridge // http://www.pico-8.com
 version 18
 __lua__
 #include utils.lua
+#include sprites.lua
+#include statemachine.lua
 #include game.lua
 
 __gfx__

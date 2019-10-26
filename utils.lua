@@ -21,6 +21,10 @@ function range(s, e, t)
   return l
 end
 
+function between(v, a, b)
+  return a <= v and v <= b
+end
+
 function map(l, fn)
   local new = {}
   for k,v in pairs(l) do
