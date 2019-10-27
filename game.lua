@@ -137,10 +137,13 @@ player = mob.subclass({
   color=7,
 })
 
+players = {}
+
 function player:init(p, x, y)
   -- self.super.init(self, x, y)
   mob.init(self, x, y)
   self.p = p-1
+  players[p] = self
 end
 
 function player:getsprite()
@@ -225,20 +228,43 @@ orangeplayer = player.subclass({
   rng=5,
 })
 
-players = {}
+player_choices = {
+  blueplayer,
+  orangeplayer,
+}
 
 -- hud
+chooser = class{
+  state='waiting',
+}
+
+function chooser:init(p)
+  self.p = p
+  self.buttons = {}
+end
+
+function chooser:update()
+  for b in all{🅾️, ❎} do
+    if btn(b, self.p-1) then
+      self.buttons[b] = true
+    else
+      self.buttons[b] = nil
+    end
+  end
+end
+
 hud = {
   sprite=sprite(64, none, 4, 2),
   meeple=subsprite(68, 0, 0, 4, 4),
   coin=subsprite(68, 0, 4, 4, 4),
+  choosers = map(range(1,4), chooser),
 }
 
 function hud:draw()
-  for p=0,3 do
-    local x = 32*p
+  for p=1,4 do
+    local x = 32*(p-1)
     self.sprite:draw(x, 0)
-    local player = players[p+1]
+    local player = players[p]
     if player then
       player.sprites.standing:draw(x+1, 1)
       pal(7, player.color)
@@ -251,9 +277,23 @@ function hud:draw()
       color(10)
       print(player.score, x+7, 10)
     else
+      choose = self.choosers[p]
       color(10)
-      print("🅾️+❎", x+11, 3)
+      print("+", x+19, 3)
       print("to join", x+3, 10)
+      if (choose.buttons[🅾️]) color(8)
+      print("🅾️", x+11, 3)
+      color(10)
+      if (choose.buttons[❎]) color(8)
+      print("❎", x+23, 3)
+    end
+  end
+end
+
+function hud:update()
+  for p=1,4 do
+    if players[p] == nil then
+      self.choosers[p]:update()
     end
   end
 end
@@ -267,11 +307,11 @@ end
 -- system callbacks
 
 function _init()
-  add(players, blueplayer(1, 10, 70))
-  add(players, orangeplayer(2, 10, 82))
+  blueplayer(1, 10, 70)
 end
 
 function _update()
+  hud:update()
   for m in all(mobs) do
     m:update()
   end
