@@ -4,6 +4,12 @@ function bound(v, low, high)
   return min(max(v, low), high)
 end
 
+function wrap(v, low, high)
+  if (v < low) return high
+  if (v > high) return low
+  return v
+end
+
 function yesno(condition, yes, no)
   if condition then
     return yes

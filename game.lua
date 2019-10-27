@@ -241,16 +241,60 @@ chooser = class{
 function chooser:init(p)
   self.p = p
   self.buttons = {}
+  self.choice = p
 end
 
 function chooser:update()
-  for b in all{🅾️, ❎} do
-    if btn(b, self.p-1) then
-      self.buttons[b] = true
-    else
-      self.buttons[b] = nil
+  local bp = self.p-1
+  if self.state == 'waiting' then
+    for b in all{🅾️, ❎} do
+      if btn(b, bp) then
+        self.buttons[b] = true
+      else
+        self.buttons[b] = nil
+      end
     end
+    if self.buttons[🅾️] and self.buttons[❎] then
+      self.state = 'choosing'
+    end
+  elseif self.state == 'choosing' then
+    local dx = 0
+    if (btnp(btns.l, bp)) dx -=1
+    if (btnp(btns.r, bp)) dx +=1
+    self.choice += dx
+    -- TODO: don't allow two players to choose the same character
+    self.choice = wrap(self.choice, 1, #player_choices)
+    if btnp(🅾️, bp) or btnp(❎, bp) then
+      self.state = 'chosen'
+    end
+  elseif self.state == 'chosen' then
+    player_choices[self.choice](self.p, 10, 60 + (10*self.p))
   end
+end
+
+function chooser:draw(x, y)
+  local fn = self['draw_'..self.state]
+  if fn then
+    fn(self, x, y)
+  end
+end
+
+function chooser:draw_waiting(x, y)
+  color(10)
+  print("+", x+19, 3)
+  print("to join", x+3, 10)
+  if (self.buttons[🅾️]) color(8)
+  print("🅾️", x+11, 3)
+  color(10)
+  if (self.buttons[❎]) color(8)
+  print("❎", x+23, 3)
+end
+
+function chooser:draw_choosing(x, y)
+  local pc = player_choices[self.choice]
+  spr(pc.sprites.standing, x+1, 1)
+  color(pc.color)
+  print(pc.name, x+3, 10)
 end
 
 hud = {
@@ -277,15 +321,7 @@ function hud:draw()
       color(10)
       print(player.score, x+7, 10)
     else
-      choose = self.choosers[p]
-      color(10)
-      print("+", x+19, 3)
-      print("to join", x+3, 10)
-      if (choose.buttons[🅾️]) color(8)
-      print("🅾️", x+11, 3)
-      color(10)
-      if (choose.buttons[❎]) color(8)
-      print("❎", x+23, 3)
+      self.choosers[p]:draw(x, 0)
     end
   end
 end
@@ -307,7 +343,6 @@ end
 -- system callbacks
 
 function _init()
-  blueplayer(1, 10, 70)
 end
 
 function _update()
