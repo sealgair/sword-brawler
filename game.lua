@@ -14,11 +14,16 @@ mobs = {}
 mob = class({
   x=0, y=0,
   w=8, h=8,
+  dir={x=0,y=0},
   flipped=false,
   sprites={
     default=1,
   },
   withsprites={},
+  str=2,
+  spd=2,
+  def=2,
+  rng=2,
 })
 
 function makesprite(s)
@@ -38,6 +43,7 @@ function mob:init(x, y)
   self.withsprites = map(self.withsprites, makesprite)
 
   self.sm = mobstatemachine(self)
+  self.sm:scaletimeouts((8-self.spd)/7)
 end
 
 function mob:getsprite()
@@ -129,23 +135,15 @@ end
 
 function player:update()
   mob.update(self)
-  if btn(btns.l, self.p) then
-    self.x = self.x - self.speed
-    self.flipped = true
-  end
-  if btn(btns.r, self.p) then
-    self.x = self.x + self.speed
-    self.flipped = false
-  end
-  self.x = bound(self.x, 0, 120)
-
-  if btn(btns.u, self.p) then
-    self.y = self.y - self.speed
-  end
-  if btn(btns.d, self.p) then
-    self.y = self.y + self.speed
-  end
-  self.y = bound(self.y, 58, 120)
+  self.dir = {x=0, y=0}
+  local walkspd = 1 + self.spd/5
+  if (btn(btns.l, self.p)) self.dir.x -=1
+  if (btn(btns.r, self.p)) self.dir.x +=1
+  if (btn(btns.u, self.p)) self.dir.y -=1
+  if (btn(btns.d, self.p)) self.dir.y +=1
+  if (self.dir.x ~= 0) self.flipped = self.dir.x < 0
+  self.x = bound(self.x+self.dir.x*walkspd, 0, 120)
+  self.y = bound(self.y+self.dir.y*walkspd, 58, 120)
 
   if btnp(btns.atk, self.p) then
     self.sm:transition("attack", 0.5)
@@ -162,6 +160,7 @@ end
 -- specific players
 
 blueplayer = player.subclass({
+  name="ba'aur",
   sprites={
     default=1,
   },
@@ -173,10 +172,14 @@ blueplayer = player.subclass({
     stunned=20,
     overextended=20,
   },
-  speed=1.2
+  str=2,
+  spd=3,
+  def=5,
+  rng=1,
 })
 
 orangeplayer = player.subclass({
+  name="anjix",
   sprites={
     default=33,
   },
@@ -188,7 +191,10 @@ orangeplayer = player.subclass({
     stunned=52,
     overextended=52,
   },
-  speed=1
+  str=5,
+  spd=1,
+  def=2,
+  rng=3,
 })
 
 -- map (TODO)

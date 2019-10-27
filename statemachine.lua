@@ -42,6 +42,10 @@ function timedstatemachine:update(dt)
   end
 end
 
+function timedstatemachine:scaletimeouts(scale)
+  self.timeouts = map(self.timeouts, function(t) return t*scale end)
+end
+
 mobstatemachine = timedstatemachine.subclass({
   states={
     "defend",
