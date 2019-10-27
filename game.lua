@@ -43,7 +43,9 @@ function mob:init(x, y)
   self.withsprites = map(self.withsprites, makesprite)
 
   self.sm = mobstatemachine(self)
-  self.sm:scaletimeouts((8-self.spd)/7)
+  local speedup = (8-self.spd)/7
+  self.sm.timeouts.attacking *= speedup
+  self.sm.timeouts.overextended *= speedup
 end
 
 function mob:getsprite()
@@ -102,11 +104,11 @@ function mob:collides(hitbox)
 end
 
 function mob:strike()
-  local hitbox = {x=self.x+8, y=self.y+2, w=8, h=4}
-  if (self.flipped) hitbox.x -= 16
+  local hitbox = {x=self.x+4, y=self.y+2, w=4+self.rng, h=4}
+  if (self.flipped) hitbox.x -= 4+self.rng
   local hits = self:collides(hitbox)
   for hit in all(hits) do
-    hit:hit()
+    hit:hit(self.str)
     self.sm:transition("strike", 0.1)
   end
   if #hits > 0 then
@@ -116,8 +118,8 @@ function mob:strike()
   end
 end
 
-function mob:hit(heavy)
-  if heavy then
+function mob:hit(atk)
+  if atk > self.def then
     self.sm:transition('heavyhit')
   else
     self.sm:transition('hit')
@@ -174,8 +176,8 @@ blueplayer = player.subclass({
   },
   str=2,
   spd=3,
-  def=5,
-  rng=1,
+  def=4,
+  rng=3,
 })
 
 orangeplayer = player.subclass({
@@ -194,7 +196,7 @@ orangeplayer = player.subclass({
   str=5,
   spd=1,
   def=2,
-  rng=3,
+  rng=5,
 })
 
 -- map (TODO)
