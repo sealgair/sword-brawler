@@ -228,9 +228,31 @@ orangeplayer = player.subclass({
   rng=5,
 })
 
+purpleplayer = player.subclass({
+  name="pyet'n",
+  color=2,
+  sprites={
+    standing=9,
+    walking=range(9,12)
+  },
+  withsprites={
+    default=25,
+    attacking=range(25, 27),
+    striking=27,
+    staggered=24,
+    stunned=28,
+    overextended=28,
+  },
+  str=2,
+  spd=5,
+  def=1,
+  rng=8,
+})
+
 player_choices = {
   blueplayer,
   orangeplayer,
+  purpleplayer,
 }
 
 -- hud
