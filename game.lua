@@ -58,11 +58,14 @@ end
 
 function mob:enter_state(state, timeout)
   if timeout ~= nil and timeout > 0 then
-    local sprite = self:getsprite()
+    local sprite = self:getwithsprite()
     if (sprite.start) sprite:start(timeout)
-    local withsprite = self:getwithsprite()
-    if (withsprite.start) withsprite:start(timeout)
   end
+end
+
+function mob:exit_state(state)
+  local sprite = self:getwithsprite()
+  if (sprite.stop) sprite:stop()
 end
 
 function mob:draw()
@@ -135,6 +138,14 @@ function player:init(p, x, y)
   self.p = p-1
 end
 
+function player:getsprite()
+  if self.dir.x == 0 and self.dir.y == 0 then
+    return self.sprites.standing
+  else
+    return self.sprites.walking
+  end
+end
+
 function player:update()
   mob.update(self)
   self.dir = {x=0, y=0}
@@ -147,6 +158,12 @@ function player:update()
   self.x = bound(self.x+self.dir.x*walkspd, 0, 120)
   self.y = bound(self.y+self.dir.y*walkspd, 58, 120)
 
+  if self.dir.x == 0 and self.dir.y == 0 then
+    self.sprites.walking:stop()
+  else
+    self.sprites.walking:start(1/self.spd, true)
+  end
+
   if btnp(btns.atk, self.p) then
     self.sm:transition("attack", 0.5)
   end
@@ -155,8 +172,8 @@ end
 -- function player:draw()
 --   mob.draw(self)
 --   print("st: "..self.sm.state, 64*self.p, 5)
---   local ws = self:getwithsprite()
---   if (ws and ws.t) print("anim timer: "..ws.t, 64*self.p, 11)
+--   local s = self:getsprite()
+--   if (s and s.t) print("anim timer: "..s.t, 64*self.p, 11)
 -- end
 
 -- specific players
@@ -164,7 +181,8 @@ end
 blueplayer = player.subclass({
   name="ba'aur",
   sprites={
-    default=1,
+    standing=1,
+    walking=range(1,4),
   },
   withsprites={
     default=17,
@@ -183,7 +201,8 @@ blueplayer = player.subclass({
 orangeplayer = player.subclass({
   name="anjix",
   sprites={
-    default=33,
+    standing=33,
+    walking=range(33,36)
   },
   withsprites={
     default=49,
