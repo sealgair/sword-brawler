@@ -36,6 +36,7 @@ function sprite:drawwith(other, x, y, flipx, flipy)
   other:draw(x, y, flipx, flipy)
 end
 
+-- animation
 animation = sprite.subclass({
   looping=false
 })
@@ -77,4 +78,21 @@ end
 
 function animation:draw(...)
   self.sprite:draw(...)
+end
+
+
+
+-- subsprite (for drawing part of a sprite)
+subsprite = class()
+
+function subsprite:init(n, x, y, w, h)
+  local coord = sscoord(n)
+  self.sx = coord.x + x
+  self.sy = coord.y + y
+  self.sw = w
+  self.sh = h
+end
+
+function subsprite:draw(...)
+  sspr(self.sx, self.sy, self.sw, self.sh, ...)
 end

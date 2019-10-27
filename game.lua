@@ -116,6 +116,7 @@ function mob:strike()
   end
   if #hits > 0 then
     self.sm:transition("strike")
+    self.score += 5
   else
     self.sm:transition("miss")
   end
@@ -130,7 +131,11 @@ function mob:hit(atk)
 end
 
 -- player definition
-player = mob.subclass()
+player = mob.subclass({
+  score=0,
+  tries=0,
+  color=7,
+})
 
 function player:init(p, x, y)
   -- self.super.init(self, x, y)
@@ -180,6 +185,7 @@ end
 
 blueplayer = player.subclass({
   name="ba'aur",
+  color=12,
   sprites={
     standing=1,
     walking=range(1,4),
@@ -200,6 +206,7 @@ blueplayer = player.subclass({
 
 orangeplayer = player.subclass({
   name="anjix",
+  color=9,
   sprites={
     standing=33,
     walking=range(33,36)
@@ -218,6 +225,39 @@ orangeplayer = player.subclass({
   rng=5,
 })
 
+players = {}
+
+-- hud
+hud = {
+  sprite=sprite(64, none, 4, 2),
+  meeple=subsprite(68, 0, 0, 4, 4),
+  coin=subsprite(68, 0, 4, 4, 4),
+}
+
+function hud:draw()
+  for p=0,3 do
+    local x = 32*p
+    self.sprite:draw(x, 0)
+    local player = players[p+1]
+    if player then
+      player.sprites.standing:draw(x+1, 1)
+      pal(7, player.color)
+      self.meeple:draw(x+11, 3)
+      pal()
+      color(player.color)
+      print(player.tries, x+16, 3)
+
+      self.coin:draw(x+2, 11)
+      color(10)
+      print(player.score, x+7, 10)
+    else
+      color(10)
+      print("🅾️+❎", x+11, 3)
+      print("to join", x+3, 10)
+    end
+  end
+end
+
 -- map (TODO)
 function draw_bg()
   rectfill(0,0,128,128,12)
@@ -227,8 +267,8 @@ end
 -- system callbacks
 
 function _init()
-  p1 = blueplayer(1, 10, 70)
-  p2 = orangeplayer(2, 10, 82)
+  add(players, blueplayer(1, 10, 70))
+  add(players, orangeplayer(2, 10, 82))
 end
 
 function _update()
@@ -243,4 +283,5 @@ function _draw()
     -- todo: sort by y, then x
     m:draw()
   end
+  hud:draw()
 end
