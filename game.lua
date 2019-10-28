@@ -26,14 +26,6 @@ mob = class({
   rng=2,
 })
 
-function makesprite(s)
-  if type(s) == "table" then
-    return animation(s)
-  else
-    return sprite(s)
-  end
-end
-
 function mob:init(x, y)
   add(mobs, self)
   self.x = x
@@ -249,10 +241,34 @@ purpleplayer = player.subclass({
   rng=8,
 })
 
+redplayer = player.subclass({
+  name="ruezzh",
+  color=8,
+  sprites={
+    standing=41,
+    walking=range(41,44)
+  },
+  withsprites={
+    default={s=98, w=2},
+    attacking={
+      {s=98, w=2}, {s=100, w=2}, {s=102, w=2},
+    },
+    striking={s=102, w=2},
+    staggered={s=96, w=2},
+    stunned={s=104, w=2},
+    overextended={s=104, w=2},
+  },
+  str=2,
+  spd=2,
+  def=2,
+  rng=12,
+})
+
 player_choices = {
   blueplayer,
   orangeplayer,
   purpleplayer,
+  redplayer,
 }
 
 -- hud
@@ -332,7 +348,7 @@ function chooser:draw_choosing(x, y)
 end
 
 hud = {
-  sprite=sprite(64, none, 4, 2),
+  sprite=sprite{s=64, w=4, h=2},
   meeple=subsprite(68, 0, 0, 4, 4),
   coin=subsprite(68, 0, 4, 4, 4),
   choosers = map(range(1,4), chooser),

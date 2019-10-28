@@ -3,10 +3,17 @@
 sprite = class()
 
 function sprite:init(n, joincolor, w, h)
-  self.n = n
-  self.joincolor = joincolor or 14
-  self.w = w or 1
-  self.h = h or 1
+  if type(n) == "table" then
+    self.n = n.s
+    self.w = n.w or 1
+    self.h = n.h or 1
+  else
+    self.n = n
+    self.w = w or 1
+    self.h = h or 1
+  end
+  if (self.w == nil) stop(self.n)
+  self.joincolor = joincolor or 11
 
   local orig = sscoord(self.n)
   forbox(orig.x, orig.y, 8, 8, function(x,y)
@@ -23,9 +30,12 @@ function sprite:init(n, joincolor, w, h)
   end)
 end
 
-function sprite:draw(x, y, ...)
+function sprite:draw(x, y, flipx, flipy)
   pal(self.joincolor, self.joinrepl)
-  spr(self.n, x, y, self.w, self.h, ...)
+  if flipx and (self.w or 1) > 1 then
+    x -= (self.w-1) * 8
+  end
+  spr(self.n, x, y, self.w, self.h, flipx, flipy)
   pal()
 end
 
@@ -33,6 +43,7 @@ function sprite:drawwith(other, x, y, flipx, flipy)
   self:draw(x, y, flipx, flipy)
   x = x + (self.join.x - other.join.x) * yesno(flipx, -1, 1)
   y = y + (self.join.y - other.join.y) * yesno(flipy, -1, 1)
+  -- rect(x, y, x+other.w*8, y+other.h*8, 14)
   other:draw(x, y, flipx, flipy)
 end
 
@@ -81,6 +92,13 @@ function animation:draw(...)
 end
 
 
+function makesprite(s)
+  if type(s) == "table" and s.s == nil then
+    return animation(s)
+  else
+    return sprite(s)
+  end
+end
 
 -- subsprite (for drawing part of a sprite)
 subsprite = class()
