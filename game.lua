@@ -385,9 +385,39 @@ function hud:update()
 end
 
 -- map (TODO)
+day=30
+time=rnd(30)
+
+planets = {
+  {
+    globe=sprite(69),
+    ground=15,
+  },
+  {
+    globe=sprite(70),
+    ground=11,
+  },
+  {
+    globe=sprite(71),
+    ground=13,
+  },
+}
+pl = ceil(rnd(3))
+planet = planets[pl]
+
 function draw_bg()
-  rectfill(0,0,128,128,12)
-  rectfill(0,64,128,128,15)
+  local sky=12
+  -- TODO: time of day? (0 is noon, 1 is midnight)
+
+  rectfill(0,0,128,128,sky)
+  for i in all{-1, 1} do
+    local otherp = planets[wrap(pl+i, 3)]
+    local x, y = 60+(i*32), 20
+    otherp.globe:draw(x, y)
+  	shadow(x+4, y+4, 4, fwrap((time/day)+((30/360)*i)), sky)
+  end
+
+  rectfill(0,64,128,128,planet.ground)
 end
 
 -- system callbacks
@@ -400,6 +430,7 @@ function _update()
   for m in all(mobs) do
     m:update()
   end
+  time = fwrap(time+dt, 0, day)
 end
 
 function _draw()
