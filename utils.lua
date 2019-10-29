@@ -80,6 +80,17 @@ function common(l)
   return mv
 end
 
+-- swap keys & values of a table
+function invert(t, initial)
+ local r={}
+ i=initial or 1
+ for k in all(t) do
+  r[k]=i
+  i+=1
+ end
+ return r
+end
+
 function bmask(a,b)
  if band(a,b) == 0 then
  	return 0

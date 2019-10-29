@@ -114,3 +114,10 @@ end
 function subsprite:draw(...)
   sspr(self.sx, self.sy, self.sw, self.sh, ...)
 end
+
+darkindex=invert{
+ 0,1,2,5,4,3,8,13,9,14,6,11,15,12,10,7
+}
+function darker(a, b)
+ return darkindex[a]<darkindex[b]
+end

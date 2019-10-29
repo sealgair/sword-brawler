@@ -384,10 +384,10 @@ function hud:update()
   end
 end
 
--- map (TODO)
-day=30
-twilight=3
-time=rnd(30)
+-- background
+day=60*5
+twilight=day*0.04
+time=day*0.75+twilight+rnd(day*.25)
 
 planets = {
   {
@@ -400,11 +400,24 @@ planets = {
   },
   {
     globe=sprite(71),
-    ground=13,
+    ground=6,
   },
 }
 pl = ceil(rnd(3))
 planet = planets[pl]
+
+stars = {}
+
+function makestars(n)
+  colors={1,5,6,7,13}
+  for i=1,n do
+    add(stars, {
+      x=flr(rnd(128)),
+      y=flr(16+rnd(48)),
+      c=colors[ceil(rnd(#colors))]
+    })
+  end
+end
 
 twilight_colors={13,14,2,1}
 function draw_sky()
@@ -423,13 +436,20 @@ function draw_sky()
     -- dawn
     sky=twilight_colors[ceil( -(t-0.75-twl2)/twl * #twilight_colors )]
   elseif between(t, 0.25, 0.75) then
-    -- night
+    -- night (TODO: light polution?)
     sky = 0
   end
 
   rectfill(0,0,127,127,sky)
 
-  -- TODO: draw stars
+  -- draw stars
+  if sky ~= 12 then
+    for s in all(stars) do
+      if darker(sky, s.c) and rnd()>0.02 then
+        pset(s.x, s.y, s.c)
+      end
+    end
+  end
 
   -- draw planets
   for i in all{-1, 1} do
@@ -440,6 +460,7 @@ function draw_sky()
   end
 end
 
+-- map (TODO)
 function draw_bg()
   draw_sky()
   rectfill(0,64,128,128,planet.ground)
@@ -448,6 +469,7 @@ end
 -- system callbacks
 
 function _init()
+  makestars(30+rnd(20))
 end
 
 function _update()
