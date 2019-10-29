@@ -386,6 +386,7 @@ end
 
 -- map (TODO)
 day=30
+twilight=3
 time=rnd(30)
 
 planets = {
@@ -405,18 +406,42 @@ planets = {
 pl = ceil(rnd(3))
 planet = planets[pl]
 
-function draw_bg()
-  local sky=12
-  -- TODO: time of day? (0 is noon, 1 is midnight)
+twilight_colors={13,14,2,1}
+function draw_sky()
+  -- 0 is noon, 0.5 is midnight
+  -- 0.25 is dusk, 0.75 is dawn
+  local t = (time/day)
+  local cn=#twilight_colors
+  local twl = twilight/day
+  local twl2 = twl/2
+  local sky=12 -- daytime
 
-  rectfill(0,0,128,128,sky)
+  if abs(t-0.25) < twl2 then
+    --dusk
+    sky=twilight_colors[ceil( (t-0.25+twl2)/twl * #twilight_colors )]
+  elseif abs(t-0.75) < twl2 then
+    -- dawn
+    sky=twilight_colors[ceil( -(t-0.75-twl2)/twl * #twilight_colors )]
+  elseif between(t, 0.25, 0.75) then
+    -- night
+    sky = 0
+  end
+
+  rectfill(0,0,127,127,sky)
+
+  -- TODO: draw stars
+
+  -- draw planets
   for i in all{-1, 1} do
     local otherp = planets[wrap(pl+i, 3)]
     local x, y = 60+(i*32), 20
     otherp.globe:draw(x, y)
-  	shadow(x+4, y+4, 4, fwrap((time/day)+((30/360)*i)), sky)
+  	shadow(x+4, y+4, 4, fwrap(t+((30/360)*i)), sky)
   end
+end
 
+function draw_bg()
+  draw_sky()
   rectfill(0,64,128,128,planet.ground)
 end
 
