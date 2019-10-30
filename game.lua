@@ -183,7 +183,7 @@ blueplayer = player.subclass({
   color=12,
   sprites={
     standing=1,
-    walking=range(1,4),
+    walking=range(2,4),
   },
   withsprites={
     default=17,
@@ -204,7 +204,7 @@ orangeplayer = player.subclass({
   color=9,
   sprites={
     standing=33,
-    walking=range(33,36)
+    walking=range(34,36)
   },
   withsprites={
     default=49,
@@ -225,7 +225,7 @@ purpleplayer = player.subclass({
   color=2,
   sprites={
     standing=9,
-    walking=range(9,12)
+    walking=range(10,12)
   },
   withsprites={
     default=25,
@@ -246,7 +246,7 @@ redplayer = player.subclass({
   color=8,
   sprites={
     standing=41,
-    walking=range(41,44)
+    walking=range(42,44)
   },
   withsprites={
     default={s=98, w=2},
@@ -400,7 +400,7 @@ planets = {
   },
   {
     globe=sprite(71),
-    ground=6,
+    ground=13,
   },
 }
 pl = ceil(rnd(3))
