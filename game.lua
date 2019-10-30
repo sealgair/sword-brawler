@@ -182,6 +182,7 @@ blueplayer = player.subclass({
   name="ba'aur",
   color=12,
   sprites={
+    face=56,
     standing=1,
     walking=range(2,4),
   },
@@ -203,6 +204,7 @@ orangeplayer = player.subclass({
   name="anjix",
   color=9,
   sprites={
+    face=32,
     standing=33,
     walking=range(34,36)
   },
@@ -224,6 +226,7 @@ purpleplayer = player.subclass({
   name="pyet'n",
   color=2,
   sprites={
+    face=8,
     standing=9,
     walking=range(10,12)
   },
@@ -245,6 +248,7 @@ redplayer = player.subclass({
   name="ruezzh",
   color=8,
   sprites={
+    face=40,
     standing=41,
     walking=range(42,44)
   },
@@ -342,7 +346,8 @@ end
 
 function chooser:draw_choosing(x, y)
   local pc = player_choices[self.choice]
-  spr(pc.sprites.standing, x+1, 1)
+  spr(pc.sprites.face, x+1, 1)
+  rectfill(x+1, 10, x+30, 14, 13)
   color(pc.color)
   print(pc.name, x+3, 10)
 end
@@ -351,16 +356,19 @@ hud = {
   sprite=sprite{s=64, w=4, h=2},
   meeple=subsprite(68, 0, 0, 4, 4),
   coin=subsprite(68, 0, 4, 4, 4),
-  choosers = map(range(1,4), chooser),
+  choosers=map(range(1,4), chooser),
 }
 
 function hud:draw()
   for p=1,4 do
     local x = 32*(p-1)
+    if self.choosers[p].state == 'waiting' then
+      rectfill(x, 0, x+10, 10, 5)
+    end
     self.sprite:draw(x, 0)
     local player = players[p]
     if player then
-      player.sprites.standing:draw(x+1, 1)
+      player.sprites.face:draw(x+1, 1)
       pal(7, player.color)
       self.meeple:draw(x+11, 3)
       pal()

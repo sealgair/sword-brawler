@@ -20,9 +20,12 @@ function sprite:init(n, joincolor, w, h)
     if sget(x,y) == self.joincolor then
       self.join = {x=x-orig.x, y=y-orig.y}
       local colors = {}
-      forbox(-1, -1, 3, 3, function(dx, dy)
-        local c = sget(x+dx, y+dy)
-        if (c ~= 0) add(colors, c)
+      forbox(-2, -2, 4, 4, function(dx, dy)
+        if between(x+dx, orig.x, orig.x+7) and
+           between(y+dy, orig.y, orig.y+7) then
+          local c = sget(x+dx, y+dy)
+          if (c ~= 0) add(colors, c)
+        end
       end)
       self.joinrepl = common(colors)
       return 1
