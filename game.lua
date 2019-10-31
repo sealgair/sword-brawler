@@ -36,6 +36,7 @@ function mob:init(x, y)
 
   self.sm = mobstatemachine(self)
   local speedup = (8-self.spd)/7
+  self.sm.timeouts.winding *= speedup
   self.sm.timeouts.attacking *= speedup
   self.sm.timeouts.overextended *= speedup
 end
@@ -165,7 +166,7 @@ function player:update()
   end
 
   if btnp(btns.atk, self.p) then
-    self.sm:transition("attack", 0.5)
+    self.sm:transition("attack")
   end
 end
 
@@ -190,6 +191,7 @@ blueplayer = player.subclass({
     default=17,
     attacking=range(17, 19),
     striking=19,
+    winding=16,
     staggered=16,
     stunned=20,
     overextended=20,
@@ -212,6 +214,7 @@ orangeplayer = player.subclass({
     default=49,
     attacking=range(49, 51),
     striking=51,
+    winding=48,
     staggered=48,
     stunned=52,
     overextended=52,
@@ -234,6 +237,7 @@ purpleplayer = player.subclass({
     default=25,
     attacking=range(25, 27),
     striking=27,
+    winding=24,
     staggered=24,
     stunned=28,
     overextended=28,
@@ -258,6 +262,7 @@ redplayer = player.subclass({
       {s=98, w=2}, {s=100, w=2}, {s=102, w=2},
     },
     striking={s=102, w=2},
+    winding={s=96, w=2},
     staggered={s=96, w=2},
     stunned={s=104, w=2},
     overextended={s=104, w=2},

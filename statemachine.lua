@@ -8,29 +8,38 @@ function statemachine:init(target)
   self.state = self.states[1]
 end
 
-function statemachine:transition(action, ...)
+function statemachine:gettransition(action)
   local trans = self.transitions[self.state]
   if trans ~= nil then
     local to = trans[action]
     if to ~= nil then
-      if (self.target.exit_state) self.target:exit_state(self.state, ...)
-      self.state = to.to
-      if (self.target.enter_state) self.target:enter_state(self.state, ...)
-      if to.callback ~= nil and self.target[to.callback] ~= nil then
-        self.target[to.callback](self.target, ...)
-      end
+      return to
     end
   end
 end
 
+function statemachine:dotransition(trans, ...)
+  if (self.target.exit_state) self.target:exit_state(self.state, ...)
+  self.state = trans.to
+  if (self.target.enter_state) self.target:enter_state(self.state, ...)
+  if trans.callback ~= nil and self.target[trans.callback] ~= nil then
+    self.target[trans.callback](self.target, ...)
+  end
+end
+
+function statemachine:transition(action, ...)
+  local trans = self:gettransition(action)
+  if (trans) self:dotransition(trans, ...)
+end
+
 timedstatemachine = statemachine.subclass({statetimer=0, timeouts={}})
 
-function timedstatemachine:transition(action, timeout, ...)
-  statemachine.transition(self, action, timeout, ...)
+function timedstatemachine:dotransition(trans, timeout, ...)
   if timeout == nil then
-    timeout = self.timeouts[self.state] or 0
+    timeout = self.timeouts[trans.to] or 0
   end
   self.statetimer = timeout or 0
+  statemachine.dotransition(self, trans, timeout, ...)
 end
 
 function timedstatemachine:update(dt)
@@ -50,6 +59,7 @@ mobstatemachine = timedstatemachine.subclass({
   states={
     "defend",
     "staggered",
+    "winding",
     "attacking",
     "striking",
     "overextended",
@@ -59,7 +69,7 @@ mobstatemachine = timedstatemachine.subclass({
   },
   transitions={
     defend={
-      attack={to="attacking"},
+      attack={to="winding"},
       hit={to="staggered"},
       heavyhit={to="stunned"},
     },
@@ -67,6 +77,10 @@ mobstatemachine = timedstatemachine.subclass({
       timeout={to="defend"},
       hit={to="defend"},
       heavyhit={to="stunned"},
+    },
+    winding={
+      timeout={to="attacking"},
+      cancel={to="defend"},
     },
     attacking={
       timeout={to="striking", callback="strike"},
@@ -93,7 +107,8 @@ mobstatemachine = timedstatemachine.subclass({
   },
   timeouts={
     staggered=0.25,
-    attacking=0.6,
+    attacking=0.3,
+    winding=0.2,
     overextended=0.75,
     stunned=0.5,
     dying=0.25,
