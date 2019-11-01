@@ -191,6 +191,19 @@ end
 
 -- specific players
 
+function weaponsprites(sprites)
+  return {
+    default=sprites[2],
+    attacking=slice(sprites, 2,4),
+    striking=sprites[4],
+    holding=sprites[1],
+    winding=sprites[1],
+    staggered=sprites[1],
+    stunned=sprites[5],
+    overextended=sprites[5],
+  }
+end
+
 blueplayer = player.subclass({
   name="ba'aur",
   color=12,
@@ -199,16 +212,7 @@ blueplayer = player.subclass({
     standing=1,
     walking=range(2,4),
   },
-  withsprites={
-    default=17,
-    attacking=range(17, 19),
-    striking=19,
-    holding=16,
-    winding=16,
-    staggered=16,
-    stunned=20,
-    overextended=20,
-  },
+  withsprites=weaponsprites(range(16,20)),
   str=2,
   spd=3,
   def=4,
@@ -223,16 +227,7 @@ orangeplayer = player.subclass({
     standing=33,
     walking=range(34,36)
   },
-  withsprites={
-    default=49,
-    attacking=range(49, 51),
-    striking=51,
-    holding=48,
-    winding=48,
-    staggered=48,
-    stunned=52,
-    overextended=52,
-  },
+  withsprites=weaponsprites(range(48,52)),
   str=5,
   spd=1,
   def=2,
@@ -247,16 +242,7 @@ purpleplayer = player.subclass({
     standing=9,
     walking=range(10,12)
   },
-  withsprites={
-    default=25,
-    attacking=range(25, 27),
-    striking=27,
-    holding=24,
-    winding=24,
-    staggered=24,
-    stunned=28,
-    overextended=28,
-  },
+  withsprites=weaponsprites(range(24,28)),
   str=2,
   spd=5,
   def=1,
@@ -271,18 +257,9 @@ redplayer = player.subclass({
     standing=41,
     walking=range(42,44)
   },
-  withsprites={
-    default={s=98, w=2},
-    attacking={
-      {s=98, w=2}, {s=100, w=2}, {s=102, w=2},
-    },
-    striking={s=102, w=2},
-    holding={s=96, w=2},
-    winding={s=96, w=2},
-    staggered={s=96, w=2},
-    stunned={s=104, w=2},
-    overextended={s=104, w=2},
-  },
+  withsprites=weaponsprites(map(range(96,104,2), function(s)
+    return {s=s, w=2}
+  end)),
   str=2,
   spd=2,
   def=2,

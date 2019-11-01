@@ -41,6 +41,16 @@ function range(s, e, t)
   return l
 end
 
+function slice(t, s, e)
+  local r = {}
+  if (s<0) s+=#t+1
+  if (e<0) e+=#t+1
+  for i=s,e do
+    add(r, t[i])
+  end
+  return r
+end
+
 function between(v, a, b)
   return a <= v and v <= b
 end
