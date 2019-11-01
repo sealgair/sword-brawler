@@ -109,7 +109,7 @@ function mob:strike()
   end
   if #hits > 0 then
     self.sm:transition("strike")
-    self.score += 5
+    self.score.coins += 5
   else
     self.sm:transition("miss")
   end
@@ -125,14 +125,13 @@ end
 
 -- player definition
 player = mob.subclass({
-  score=0,
-  tries=0,
   color=7,
   wasatk=false,
   isatk=false,
 })
 
 players = {}
+scores = map(range(1,4), function() return {tries=0, coins=0} end)
 
 function player:init(p, x, y)
   -- self.super.init(self, x, y)
@@ -140,6 +139,8 @@ function player:init(p, x, y)
   self.p = p-1
   players[p] = self
   self.cooldown=0.1
+  self.score = scores[p]
+  self.score.tries += 1
 end
 
 function player:getsprite()
@@ -348,6 +349,8 @@ function chooser:update()
     else
       self.state = "gameover"
       self.timer = 3
+      scores[self.p].tries = 0
+      scores[self.p].coins = 0
     end
   elseif self.state == 'gameover' then
     if self.timer > 0 then
@@ -427,11 +430,11 @@ function hud:draw()
       self.meeple:draw(x+11, 3)
       pal()
       color(player.color)
-      print(player.tries, x+16, 3)
+      print(player.score.tries, x+16, 3)
 
       self.coin:draw(x+2, 11)
       color(10)
-      print(player.score, x+7, 10)
+      print(player.score.coins, x+7, 10)
 
       -- debug
       -- print(player.sm.state, x, 17)
