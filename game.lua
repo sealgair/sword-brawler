@@ -290,6 +290,8 @@ chooser = class{
   state='waiting',
 }
 
+respawn_cost = 25
+
 function chooser:init(p)
   self.p = p
   self.buttons = {}
@@ -337,11 +339,12 @@ function chooser:update()
     self.timer = 10
     player_choices[self.choice](self.p, 10, 60 + (10*self.p))
   elseif self.state == 'respawn' then
-    if self.timer > 0 then
+    if scores[self.p].coins >= respawn_cost and self.timer > 0 then
       self.timer -= dt
       if self.timer < 9 then
         if btnp(🅾️, bp) then
           self.state = 'choosing'
+          scores[self.p].coins -= respawn_cost
         elseif btnp(❎, bp) then
           self.timer -= 1
         end
