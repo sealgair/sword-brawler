@@ -73,10 +73,9 @@ end
 
 function mob:update()
   self.sm:update(dt)
-  local sprite = self:getsprite()
-  if (sprite.advance) sprite:advance(dt)
-  local withsprite = self:getwithsprite()
-  if (withsprite.advance) withsprite:advance(dt)
+  for sprite in all{self:getsprite(), self:getwithsprite()} do
+    if (sprite.advance) sprite:advance(dt)
+  end
   if self.dead then
     del(mobs, self)
   end
@@ -128,6 +127,8 @@ player = mob.subclass({
   score=0,
   tries=0,
   color=7,
+  wasatk=false,
+  isatk=false,
 })
 
 players = {}
@@ -165,8 +166,19 @@ function player:update()
     self.sprites.walking:start(1/self.spd, true)
   end
 
-  if btnp(btns.atk, self.p) then
+  self.wasatk = self.isatk
+  self.isatk = btn(btns.atk, self.p)
+  if not self.wasatk and self.isatk then
     self.sm:transition("attack")
+  end
+  if self.sm.state == "holding" and not self.isatk then
+    self.sm:transition("release")
+  end
+end
+
+function player:exit_winding()
+  if not self.isatk then
+    self.sm:transition("release")
   end
 end
 
@@ -191,6 +203,7 @@ blueplayer = player.subclass({
     default=17,
     attacking=range(17, 19),
     striking=19,
+    holding=16,
     winding=16,
     staggered=16,
     stunned=20,
@@ -214,6 +227,7 @@ orangeplayer = player.subclass({
     default=49,
     attacking=range(49, 51),
     striking=51,
+    holding=48,
     winding=48,
     staggered=48,
     stunned=52,
@@ -237,6 +251,7 @@ purpleplayer = player.subclass({
     default=25,
     attacking=range(25, 27),
     striking=27,
+    holding=24,
     winding=24,
     staggered=24,
     stunned=28,
@@ -262,6 +277,7 @@ redplayer = player.subclass({
       {s=98, w=2}, {s=100, w=2}, {s=102, w=2},
     },
     striking={s=102, w=2},
+    holding={s=96, w=2},
     winding={s=96, w=2},
     staggered={s=96, w=2},
     stunned={s=104, w=2},

@@ -60,6 +60,7 @@ mobstatemachine = timedstatemachine.subclass({
     "defend",
     "staggered",
     "winding",
+    "holding",
     "attacking",
     "striking",
     "overextended",
@@ -79,8 +80,15 @@ mobstatemachine = timedstatemachine.subclass({
       heavyhit={to="stunned"},
     },
     winding={
-      timeout={to="attacking"},
+      timeout={to="holding", callback="exit_winding"},
+      hit={to="dying"},
+      heavyhit={to="dying"},
+    },
+    holding={
+      release={to="attacking"},
       cancel={to="defend"},
+      hit={to="dying"},
+      heavyhit={to="dying"},
     },
     attacking={
       timeout={to="striking", callback="strike"},
@@ -90,6 +98,8 @@ mobstatemachine = timedstatemachine.subclass({
     striking={
       miss={to="overextended"},
       strike={to="defend"},
+      hit={to="dying"},
+      heavyhit={to="dying"},
     },
     overextended={
       timeout={to="defend"},
@@ -107,8 +117,8 @@ mobstatemachine = timedstatemachine.subclass({
   },
   timeouts={
     staggered=0.25,
-    attacking=0.3,
-    winding=0.2,
+    attacking=0.2,
+    winding=0.4,
     overextended=0.75,
     stunned=0.5,
     dying=0.25,

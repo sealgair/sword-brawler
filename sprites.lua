@@ -83,7 +83,7 @@ function animation:advance(dt)
     end
   end
   local i = 1
-  if self.t ~= 0 then
+  if self.d ~= 0 then
     i = max(ceil((1-(self.t / self.d)) * #self.sprites), 1)
   end
   self.sprite = self.sprites[i]

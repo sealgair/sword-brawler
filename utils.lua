@@ -99,6 +99,20 @@ function bmask(a,b)
  end
 end
 
+function concat(...)
+  local r = ""
+  for s in all{...} do
+    if s == nil then
+      r = r .."nil"
+    elseif type(s) == "boolean" then
+      r = r .. yesno(s, "true", "false")
+    else
+      r = r .. s
+    end
+  end
+  return r
+end
+
 function ellipse(cx,cy, a,b, i, q)
   i = not not i -- to bool
   q = q or 0b1111
