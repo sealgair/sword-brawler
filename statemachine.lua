@@ -112,7 +112,7 @@ mobstatemachine = timedstatemachine.subclass({
       heavyhit={to="dying"},
     },
     dying={
-      timeout={to="dead"},
+      timeout={to="dead", callback="die"},
     }
   },
   timeouts={

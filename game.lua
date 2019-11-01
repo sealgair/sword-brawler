@@ -76,9 +76,10 @@ function mob:update()
   for sprite in all{self:getsprite(), self:getwithsprite()} do
     if (sprite.advance) sprite:advance(dt)
   end
-  if self.dead then
-    del(mobs, self)
-  end
+end
+
+function mob:die()
+  del(mobs, self)
 end
 
 function mob:collides(hitbox)
@@ -138,6 +139,7 @@ function player:init(p, x, y)
   mob.init(self, x, y)
   self.p = p-1
   players[p] = self
+  self.cooldown=0.1
 end
 
 function player:getsprite()
@@ -166,13 +168,17 @@ function player:update()
     self.sprites.walking:start(1/self.spd, true)
   end
 
-  self.wasatk = self.isatk
-  self.isatk = btn(btns.atk, self.p)
-  if not self.wasatk and self.isatk then
-    self.sm:transition("attack")
-  end
-  if self.sm.state == "holding" and not self.isatk then
-    self.sm:transition("release")
+  if self.cooldown <=0 then
+    self.wasatk = self.isatk
+    self.isatk = btn(btns.atk, self.p)
+    if not self.wasatk and self.isatk then
+      self.sm:transition("attack")
+    end
+    if self.sm.state == "holding" and not self.isatk then
+      self.sm:transition("release")
+    end
+  else
+    self.cooldown -= dt
   end
 end
 
@@ -180,6 +186,11 @@ function player:exit_winding()
   if not self.isatk then
     self.sm:transition("release")
   end
+end
+
+function player:die()
+  mob.die(self)
+  players[self.p+1] = nil
 end
 
 -- function player:draw()
@@ -320,6 +331,7 @@ function chooser:update()
       self.state = 'chosen'
     end
   elseif self.state == 'chosen' then
+    self.state = 'waiting'
     player_choices[self.choice](self.p, 10, 60 + (10*self.p))
   end
 end
@@ -376,6 +388,8 @@ function hud:draw()
       self.coin:draw(x+2, 11)
       color(10)
       print(player.score, x+7, 10)
+
+      print(player.sm.state, x, 17)
     else
       self.choosers[p]:draw(x, 0)
     end
