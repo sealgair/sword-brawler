@@ -296,6 +296,7 @@ function chooser:init(p)
 end
 
 function chooser:update()
+  -- TODO: turn this into a state machine
   local bp = self.p-1
   if self.state == 'waiting' then
     for b in all{🅾️, ❎} do
@@ -331,8 +332,29 @@ function chooser:update()
       self.state = 'chosen'
     end
   elseif self.state == 'chosen' then
-    self.state = 'waiting'
+    self.state = 'respawn'
+    self.timer = 10
     player_choices[self.choice](self.p, 10, 60 + (10*self.p))
+  elseif self.state == 'respawn' then
+    if self.timer > 0 then
+      self.timer -= dt
+      if self.timer < 9 then
+        if btnp(🅾️, bp) then
+          self.state = 'choosing'
+        elseif btnp(❎, bp) then
+          self.timer -= 1
+        end
+      end
+    else
+      self.state = "gameover"
+      self.timer = 3
+    end
+  elseif self.state == 'gameover' then
+    if self.timer > 0 then
+      self.timer -= dt
+    else
+      self.state = "waiting"
+    end
   end
 end
 
@@ -354,12 +376,34 @@ function chooser:draw_waiting(x, y)
   print("❎", x+23, 3)
 end
 
-function chooser:draw_choosing(x, y)
+function chooser:draw_face(x, y)
   local pc = player_choices[self.choice]
   spr(pc.sprites.face, x+1, 1)
-  rectfill(x+1, 10, x+30, 14, 13)
   color(pc.color)
+  return pc
+end
+
+function chooser:draw_choosing(x, y)
+  rectfill(x+1, 10, x+30, 14, 13)
+  local pc = self:draw_face(x,y)
   print(pc.name, x+3, 10)
+end
+
+function chooser:draw_respawn(x, y)
+  color(8)
+  local cts=ceil(self.timer)
+  for i=1,flr((1-(self.timer-flr(self.timer)))*4) do
+    cts=cts.."."
+  end
+  print(cts, x+11, 3)
+  self:draw_face(x,y)
+  print("cont?", x+3, 10)
+end
+
+function chooser:draw_gameover(x, y)
+  self:draw_face(x,y)
+  color(8)
+  print("the end", x+3, 10)
 end
 
 hud = {
@@ -389,7 +433,8 @@ function hud:draw()
       color(10)
       print(player.score, x+7, 10)
 
-      print(player.sm.state, x, 17)
+      -- debug
+      -- print(player.sm.state, x, 17)
     else
       self.choosers[p]:draw(x, 0)
     end
