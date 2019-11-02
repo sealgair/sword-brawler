@@ -33,6 +33,11 @@ end
 
 timedstatemachine = statemachine.subclass({statetimer=0, timeouts={}})
 
+function timedstatemachine:init(...)
+  statemachine.init(self, ...)
+  self.timeouts = copy(self.timeouts)
+end
+
 function timedstatemachine:dotransition(trans, timeout, ...)
   if timeout == nil then
     timeout = self.timeouts[trans.to] or 0
@@ -61,6 +66,8 @@ mobstatemachine = timedstatemachine.subclass({
       attack={to="winding"},
       hit={to="staggered"},
       heavyhit={to="stunned"},
+      parry={to="parrying"},
+      dodge={to="dodging"},
     },
     staggered={
       timeout={to="defend"},
@@ -78,6 +85,14 @@ mobstatemachine = timedstatemachine.subclass({
       cancel={to="defend"},
       hit={to="dying"},
       heavyhit={to="dying"},
+    },
+    dodging={
+      timeout={to="defend"},
+    },
+    parrying={
+      timeout={to="defend"},
+      hit={to="defend", callback="parried"},
+      heavyhit={to="defend", callback="parried"},
     },
     attacking={
       timeout={to="defend", callback="strike"},
@@ -110,12 +125,14 @@ mobstatemachine = timedstatemachine.subclass({
     }
   },
   timeouts={
-    staggered=0.25,
+    winding=0.4,
+    dodging=0.3,
+    parrying=0.3,
     attacking=0.2,
     smashing=0.3,
-    winding=0.4,
+    staggered=0.25,
     overextended=0.75,
     stunned=0.5,
-    dying=0.25,
+    dying=0.025,
   }
 })

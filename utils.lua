@@ -51,8 +51,21 @@ function slice(t, s, e)
   return r
 end
 
+function copy(t)
+  local c = {}
+  for k,v in pairs(t) do
+    c[k] = v
+  end
+  return c
+end
+
 function between(v, a, b)
   return a <= v and v <= b
+end
+
+function intersects(a, b)
+  return (a.x+a.w >= b.x and b.x+b.w >= a.x) and
+      (a.y+a.h >= b.y and b.y+b.h >= a.y)
 end
 
 function map(l, fn)

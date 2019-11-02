@@ -39,6 +39,7 @@ function mob:init(x, y)
   self.sm.timeouts.winding *= speedup
   self.sm.timeouts.attacking *= speedup
   self.sm.timeouts.overextended *= speedup
+  self.sm.timeouts.parrying *= (1+((self.def-1)/3))
 end
 
 function mob:getsprite()
@@ -82,16 +83,25 @@ function mob:die()
   del(mobs, self)
 end
 
-function mob:collides(hitbox)
-  if (not hitbox) hitbox = {x=self.x, y=self.y, w=self.w, h=self.h}
+function mob:hitbox()
+  local box = {
+    x=self.x, y=self.y,
+    w=self.w, h=self.h
+  }
+  local sts = {attacking=true, parrying=true}
+  if sts[self.state] then
+    self.w += self.rng
+    if (self.flipped) hitbox.x -= self.rng
+  end
+  return box
+end
+
+function mob:collides()
   local hits = {}
   for mob in all(mobs) do
     if mob ~= self then
       -- check boxes for overlap
-      if (between(hitbox.x, mob.x, mob.x+mob.w) or
-            between(hitbox.x+hitbox.w, mob.x, mob.x+mob.w)) and
-         (between(hitbox.y, mob.y, mob.y+mob.h) or
-            between(hitbox.y+hitbox.h, mob.y, mob.y+mob.h)) then
+      if intersects(self:hitbox(), mob:hitbox()) then
         add(hits, mob)
       end
     end
@@ -99,15 +109,17 @@ function mob:collides(hitbox)
   return hits
 end
 
+function mob:parried(atk, other)
+  if atk < self.def then
+  end
+end
+
 function mob:strike(heavy)
-  local hitbox = {x=self.x+4, y=self.y+2, w=4+self.rng, h=4}
-  if (self.flipped) hitbox.x -= 4+self.rng
-  local hits = self:collides(hitbox)
+  local hits = self:collides()
   local str = self.str
   if (heavy) str *= 1.5
   for hit in all(hits) do
-    hit:hit(str)
-    self.sm:transition("strike", 0.1)
+    hit:hit(str, self)
   end
   if #hits > 0 then
     self.sm:transition("strike")
@@ -121,7 +133,7 @@ function mob:smash()
   self:strike(true)
 end
 
-function mob:hit(atk)
+function mob:hit(atk, other)
   --[[
   TODO:
   * attack superiority: str+atkstr - def:
@@ -132,11 +144,11 @@ function mob:hit(atk)
     * 3 defender knocked down
     * 4 defender killed
   ]]
+  local tr = 'hit'
   if atk > self.def then
-    self.sm:transition('heavyhit')
-  else
-    self.sm:transition('hit')
+    tr = 'heavyhit'
   end
+  self.sm:transition(tr, nil, atk, other)
 end
 
 -- player definition
@@ -205,6 +217,18 @@ function player:update()
   else
     self.cooldown -= dt
   end
+
+  if btnp(btns.def, self.p) then
+    if self.sm.state == "defend" then
+      if self:ismoving() then
+        self.sm:transition("dodge")
+      else
+        self.sm:transition("parry")
+      end
+    else
+      self.sm:transition("cancel")
+    end
+  end
 end
 
 function player:exit_winding()
@@ -242,6 +266,7 @@ function weaponsprites(sprites)
     staggered=sprites[1],
     stunned=sprites[5],
     overextended=sprites[5],
+    parrying=sprites[7],
   }
 end
 
@@ -253,7 +278,7 @@ blueplayer = player.subclass({
     standing=1,
     walking=range(2,4),
   },
-  withsprites=weaponsprites(range(16,21)),
+  withsprites=weaponsprites(range(16,22)),
   str=2,
   spd=3,
   def=4,
@@ -268,7 +293,7 @@ orangeplayer = player.subclass({
     standing=33,
     walking=range(34,36)
   },
-  withsprites=weaponsprites(range(48,53)),
+  withsprites=weaponsprites(range(48,54)),
   str=5,
   spd=1,
   def=2,
@@ -283,7 +308,7 @@ purpleplayer = player.subclass({
     standing=9,
     walking=range(10,12)
   },
-  withsprites=weaponsprites(range(24,29)),
+  withsprites=weaponsprites(range(24,30)),
   str=2,
   spd=5,
   def=1,
@@ -298,7 +323,7 @@ redplayer = player.subclass({
     standing=41,
     walking=range(42,44)
   },
-  withsprites=weaponsprites(map(range(96,106,2), function(s)
+  withsprites=weaponsprites(map(range(96,108,2), function(s)
     return {s=s, w=2}
   end)),
   str=2,
@@ -469,7 +494,7 @@ function hud:draw()
       print(player.score.coins, x+7, 10)
 
       -- debug
-      -- print(player.sm.state, x, 17)
+      -- print(player.sm.state..":"..player.sm.statetimer, x, 12+p*5)
     else
       self.choosers[p]:draw(x, 0)
     end
