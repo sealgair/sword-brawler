@@ -143,6 +143,6 @@ mobstatemachine = timedstatemachine.subclass({
     staggered=0.25,
     overextended=0.75,
     stunned=0.5,
-    dying=0.025,
+    dying=1.2,
   }
 })

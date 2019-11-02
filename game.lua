@@ -39,6 +39,7 @@ function mob:init(x, y)
   self.sm.timeouts.winding *= speedup
   self.sm.timeouts.attacking *= speedup
   self.sm.timeouts.overextended *= speedup
+  self.sm.timeouts.dodging /= speedup
   self.sm.timeouts.parrying *= (1+((self.def-1)/3))
 end
 
@@ -52,14 +53,16 @@ end
 
 function mob:enter_state(state, timeout)
   if timeout ~= nil and timeout > 0 then
-    local sprite = self:getwithsprite()
-    sprite:start(timeout)
+    for sprite in all{self:getsprite(), self:getwithsprite()} do
+      sprite:start(timeout)
+    end
   end
 end
 
 function mob:exit_state(state)
-  local sprite = self:getwithsprite()
-  sprite:stop()
+  for sprite in all{self:getsprite(), self:getwithsprite()} do
+    sprite:stop()
+  end
 end
 
 function mob:draw()
@@ -182,8 +185,9 @@ function player:init(p, x, y)
 end
 
 function player:getsprite()
-  if self.dodging then
-    return self.sprites.dodging
+  local spr = self.sprites[self.sm.state]
+  if spr then
+    return spr
   elseif self.dir.x == 0 and self.dir.y == 0 then
     return self.sprites.standing
   else
@@ -301,15 +305,20 @@ function weaponsprites(sprites)
   }
 end
 
+function dyinganim(ps)
+  return {ps, ps, ps, ps, 1, 2, 3, 4}
+end
+
 blueplayer = player.subclass({
   name="ba'aur",
   color=12,
   sprites={
     face=56,
     weapon=19,
-    standing=1,
-    walking=range(2,4),
-    dodging=5,
+    standing=57,
+    walking=range(58,60),
+    dodging=61,
+    dying=dyinganim(62),
   },
   withsprites=weaponsprites(range(16,22)),
   str=2,
@@ -327,6 +336,7 @@ orangeplayer = player.subclass({
     standing=33,
     walking=range(34,36),
     dodging=37,
+    dying=dyinganim(38),
   },
   withsprites=weaponsprites(range(48,54)),
   str=5,
@@ -344,6 +354,7 @@ purpleplayer = player.subclass({
     standing=9,
     walking=range(10,12),
     dodging=range(13,14),
+    dying=dyinganim(15),
   },
   withsprites=weaponsprites(range(24,30)),
   str=2,
@@ -360,7 +371,8 @@ redplayer = player.subclass({
     weapon=99,
     standing=41,
     walking=range(42,44),
-    walking=range(45,46),
+    dodging=range(45,46),
+    dying=dyinganim(47),
   },
   withsprites=weaponsprites(map(range(96,108,2), function(s)
     return {s=s, w=2}
@@ -444,7 +456,7 @@ function chooser:update()
       end
     else
       self.state = "gameover"
-      self.timer = 3
+      self.timer = 5
       scores[self.p].tries = 0
       scores[self.p].coins = 0
     end
@@ -486,7 +498,7 @@ function chooser:draw_choosing(x, y)
   rectfill(x+1, 10, x+30, 14, 13)
   local pc = self:draw_face(x,y)
   print(pc.name, x+3, 10)
-  rectfill(x+14, 1, x+22, 9, 13)
+  rectfill(x+12, 1, x+22, 9, 13)
   --TODO: prolly don't re-init a sprite every frame
   sprite(pc.sprites.weapon):draw(x+14, 1)
 end
