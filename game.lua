@@ -99,12 +99,14 @@ function mob:collides(hitbox)
   return hits
 end
 
-function mob:strike()
+function mob:strike(heavy)
   local hitbox = {x=self.x+4, y=self.y+2, w=4+self.rng, h=4}
   if (self.flipped) hitbox.x -= 4+self.rng
   local hits = self:collides(hitbox)
+  local str = self.str
+  if (heavy) str *= 1.5
   for hit in all(hits) do
-    hit:hit(self.str)
+    hit:hit(str)
     self.sm:transition("strike", 0.1)
   end
   if #hits > 0 then
@@ -115,7 +117,21 @@ function mob:strike()
   end
 end
 
+function mob:smash()
+  self:strike(true)
+end
+
 function mob:hit(atk)
+  --[[
+  TODO:
+  * attack superiority: str+atkstr - def:
+    * <-1 atk stagger
+    * <=0 both stagger (can’t attack, can defend)
+    * 1 defender staggers
+    * 2 defender stunned
+    * 3 defender knocked down
+    * 4 defender killed
+  ]]
   if atk > self.def then
     self.sm:transition('heavyhit')
   else
@@ -151,6 +167,10 @@ function player:getsprite()
   end
 end
 
+function player:ismoving()
+  return self.dir.x + self.dir.y ~= 0
+end
+
 function player:update()
   mob.update(self)
   self.dir = {x=0, y=0}
@@ -163,10 +183,10 @@ function player:update()
   self.x = bound(self.x+self.dir.x*walkspd, 0, 120)
   self.y = bound(self.y+self.dir.y*walkspd, 58, 120)
 
-  if self.dir.x == 0 and self.dir.y == 0 then
-    self.sprites.walking:stop()
-  else
+  if self:ismoving() then
     self.sprites.walking:start(1/self.spd, true)
+  else
+    self.sprites.walking:stop()
   end
 
   if self.cooldown <=0 then
@@ -176,7 +196,11 @@ function player:update()
       self.sm:transition("attack")
     end
     if self.sm.state == "holding" and not self.isatk then
-      self.sm:transition("release")
+      if self:ismoving() then
+        self.sm:transition("release")
+      else
+        self.sm:transition("smash")
+      end
     end
   else
     self.cooldown -= dt
@@ -185,7 +209,11 @@ end
 
 function player:exit_winding()
   if not self.isatk then
-    self.sm:transition("release")
+    if self:ismoving() then
+      self.sm:transition("release")
+    else
+      self.sm:transition("smash")
+    end
   end
 end
 
@@ -206,7 +234,8 @@ end
 function weaponsprites(sprites)
   return {
     default=sprites[2],
-    attacking=slice(sprites, 2,4),
+    attacking={sprites[2], sprites[6], sprites[4]},
+    smashing=slice(sprites, 2,4),
     striking=sprites[4],
     holding=sprites[1],
     winding=sprites[1],
@@ -224,7 +253,7 @@ blueplayer = player.subclass({
     standing=1,
     walking=range(2,4),
   },
-  withsprites=weaponsprites(range(16,20)),
+  withsprites=weaponsprites(range(16,21)),
   str=2,
   spd=3,
   def=4,
@@ -239,7 +268,7 @@ orangeplayer = player.subclass({
     standing=33,
     walking=range(34,36)
   },
-  withsprites=weaponsprites(range(48,52)),
+  withsprites=weaponsprites(range(48,53)),
   str=5,
   spd=1,
   def=2,
@@ -254,7 +283,7 @@ purpleplayer = player.subclass({
     standing=9,
     walking=range(10,12)
   },
-  withsprites=weaponsprites(range(24,28)),
+  withsprites=weaponsprites(range(24,29)),
   str=2,
   spd=5,
   def=1,
@@ -269,7 +298,7 @@ redplayer = player.subclass({
     standing=41,
     walking=range(42,44)
   },
-  withsprites=weaponsprites(map(range(96,104,2), function(s)
+  withsprites=weaponsprites(map(range(96,106,2), function(s)
     return {s=s, w=2}
   end)),
   str=2,

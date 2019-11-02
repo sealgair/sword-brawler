@@ -43,6 +43,7 @@ function sprite:draw(x, y, flipx, flipy)
 end
 
 function sprite:drawwith(other, x, y, flipx, flipy)
+  color(7)
   self:draw(x, y, flipx, flipy)
   x = x + (self.join.x - other.join.x) * yesno(flipx, -1, 1)
   y = y + (self.join.y - other.join.y) * yesno(flipy, -1, 1)

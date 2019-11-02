@@ -5,7 +5,6 @@ statemachine = class({
 
 function statemachine:init(target)
   self.target = target
-  self.state = self.states[1]
 end
 
 function statemachine:gettransition(action)
@@ -56,18 +55,7 @@ function timedstatemachine:scaletimeouts(scale)
 end
 
 mobstatemachine = timedstatemachine.subclass({
-  states={
-    "defend",
-    "staggered",
-    "winding",
-    "holding",
-    "attacking",
-    "striking",
-    "overextended",
-    "stunned",
-    "dying",
-    "dead",
-  },
+  state="defend",
   transitions={
     defend={
       attack={to="winding"},
@@ -86,12 +74,18 @@ mobstatemachine = timedstatemachine.subclass({
     },
     holding={
       release={to="attacking"},
+      smash={to="smashing"},
       cancel={to="defend"},
       hit={to="dying"},
       heavyhit={to="dying"},
     },
     attacking={
-      timeout={to="striking", callback="strike"},
+      timeout={to="defend", callback="strike"},
+      hit={to="dying"},
+      heavyhit={to="dying"},
+    },
+    smashing={
+      timeout={to="striking", callback="smash"},
       hit={to="dying"},
       heavyhit={to="dying"},
     },
@@ -118,6 +112,7 @@ mobstatemachine = timedstatemachine.subclass({
   timeouts={
     staggered=0.25,
     attacking=0.2,
+    smashing=0.3,
     winding=0.4,
     overextended=0.75,
     stunned=0.5,
