@@ -275,6 +275,7 @@ blueplayer = player.subclass({
   color=12,
   sprites={
     face=56,
+    weapon=19,
     standing=1,
     walking=range(2,4),
   },
@@ -290,6 +291,7 @@ orangeplayer = player.subclass({
   color=9,
   sprites={
     face=32,
+    weapon=51,
     standing=33,
     walking=range(34,36)
   },
@@ -305,6 +307,7 @@ purpleplayer = player.subclass({
   color=2,
   sprites={
     face=8,
+    weapon=25,
     standing=9,
     walking=range(10,12)
   },
@@ -320,6 +323,7 @@ redplayer = player.subclass({
   color=8,
   sprites={
     face=40,
+    weapon=99,
     standing=41,
     walking=range(42,44)
   },
@@ -447,6 +451,9 @@ function chooser:draw_choosing(x, y)
   rectfill(x+1, 10, x+30, 14, 13)
   local pc = self:draw_face(x,y)
   print(pc.name, x+3, 10)
+  rectfill(x+14, 1, x+22, 9, 13)
+  --TODO: prolly don't re-init a sprite every frame
+  sprite(pc.sprites.weapon):draw(x+14, 1)
 end
 
 function chooser:draw_respawn(x, y)
