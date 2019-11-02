@@ -33,6 +33,9 @@ function sprite:init(n, joincolor, w, h)
   end)
 end
 
+function sprite:start() end
+function sprite:stop() end
+
 function sprite:draw(x, y, flipx, flipy)
   pal(self.joincolor, self.joinrepl)
   if flipx and (self.w or 1) > 1 then

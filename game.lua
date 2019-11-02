@@ -53,19 +53,19 @@ end
 function mob:enter_state(state, timeout)
   if timeout ~= nil and timeout > 0 then
     local sprite = self:getwithsprite()
-    if (sprite.start) sprite:start(timeout)
+    sprite:start(timeout)
   end
 end
 
 function mob:exit_state(state)
   local sprite = self:getwithsprite()
-  if (sprite.stop) sprite:stop()
+  sprite:stop()
 end
 
 function mob:draw()
   local sprite = self:getsprite()
   local withsprite = self:getwithsprite()
-  if withsprite ~= nil then
+  if withsprite ~= nil and sprite.join then
     sprite:drawwith(withsprite, self.x, self.y, self.flipped)
   else
     sprite:draw(self.x, self.y, self.flipped)
@@ -172,7 +172,9 @@ function player:init(p, x, y)
 end
 
 function player:getsprite()
-  if self.dir.x == 0 and self.dir.y == 0 then
+  if self.dodging then
+    return self.sprites.dodging
+  elseif self.dir.x == 0 and self.dir.y == 0 then
     return self.sprites.standing
   else
     return self.sprites.walking
@@ -185,12 +187,16 @@ end
 
 function player:update()
   mob.update(self)
-  self.dir = {x=0, y=0}
   local walkspd = 1 + self.spd/5
-  if (btn(btns.l, self.p)) self.dir.x -=1
-  if (btn(btns.r, self.p)) self.dir.x +=1
-  if (btn(btns.u, self.p)) self.dir.y -=1
-  if (btn(btns.d, self.p)) self.dir.y +=1
+  if self.dodging then
+    walkspd *= 2
+  else
+    self.dir = {x=0, y=0}
+    if (btn(btns.l, self.p)) self.dir.x -=1
+    if (btn(btns.r, self.p)) self.dir.x +=1
+    if (btn(btns.u, self.p)) self.dir.y -=1
+    if (btn(btns.d, self.p)) self.dir.y +=1
+  end
   if (self.dir.x ~= 0) self.flipped = self.dir.x < 0
   self.x = bound(self.x+self.dir.x*walkspd, 0, 120)
   self.y = bound(self.y+self.dir.y*walkspd, 58, 120)
@@ -241,6 +247,15 @@ function player:exit_winding()
   end
 end
 
+function player:start_dodge(time)
+  self.dodging = self.dir
+  self.sprites.dodging:start(time)
+end
+
+function player:stop_dodge()
+  self.dodging = nil
+end
+
 function player:die()
   mob.die(self)
   players[self.p+1] = nil
@@ -278,6 +293,7 @@ blueplayer = player.subclass({
     weapon=19,
     standing=1,
     walking=range(2,4),
+    dodging=5,
   },
   withsprites=weaponsprites(range(16,22)),
   str=2,
@@ -293,7 +309,8 @@ orangeplayer = player.subclass({
     face=32,
     weapon=51,
     standing=33,
-    walking=range(34,36)
+    walking=range(34,36),
+    dodging=37,
   },
   withsprites=weaponsprites(range(48,54)),
   str=5,
@@ -309,7 +326,8 @@ purpleplayer = player.subclass({
     face=8,
     weapon=25,
     standing=9,
-    walking=range(10,12)
+    walking=range(10,12),
+    dodging=range(13,14),
   },
   withsprites=weaponsprites(range(24,30)),
   str=2,
@@ -325,7 +343,8 @@ redplayer = player.subclass({
     face=40,
     weapon=99,
     standing=41,
-    walking=range(42,44)
+    walking=range(42,44),
+    walking=range(45,46),
   },
   withsprites=weaponsprites(map(range(96,108,2), function(s)
     return {s=s, w=2}
