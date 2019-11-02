@@ -162,6 +162,11 @@ player = mob.subclass({
   color=7,
   wasatk=false,
   isatk=false,
+  wasdef=false,
+  atkcool=0.1,
+  isdef=false,
+  defcool=0.1,
+  defcooldown=1,
 })
 
 players = {}
@@ -172,7 +177,6 @@ function player:init(p, x, y)
   mob.init(self, x, y)
   self.p = p-1
   players[p] = self
-  self.cooldown=0.1
   self.score = scores[p]
   self.score.tries += 1
 end
@@ -213,7 +217,7 @@ function player:update()
     self.sprites.walking:stop()
   end
 
-  if self.cooldown <=0 then
+  if self.atkcool <= 0 then
     self.wasatk = self.isatk
     self.isatk = btn(btns.atk, self.p)
     if not self.wasatk and self.isatk then
@@ -227,15 +231,21 @@ function player:update()
       end
     end
   else
-    self.cooldown -= dt
+    self.atkcool -= dt
   end
 
-  if btnp(btns.def, self.p) then
+  self.wasdef = self.isdef
+  self.isdef = btn(btns.def, self.p)
+  if self.defcool > 0 then
+    self.defcool -= dt
+  elseif not self.wasdef and self.isdef then
     if self.sm.state == "defend" then
       if self:ismoving() then
         self.sm:transition("dodge")
+        self.defcool = self.defcooldown
       else
         self.sm:transition("parry")
+        self.defcool = self.defcooldown
       end
     else
       self.sm:transition("cancel")
