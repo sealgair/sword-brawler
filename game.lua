@@ -8,6 +8,26 @@ btns={
 }
 dt = 1/30
 
+function weaponsprites(sprites)
+  return {
+    default=sprites[2],
+    attacking={sprites[2], sprites[6], sprites[4]},
+    smashing=slice(sprites, 2,4),
+    striking=sprites[4],
+    holding=sprites[1],
+    winding=sprites[1],
+    staggered=sprites[1],
+    stunned=sprites[5],
+    overextended=sprites[5],
+    parrying=sprites[7],
+  }
+end
+
+function dyinganim(ps)
+  return {ps, ps, ps, ps, 1, 2, 3, 4}
+end
+
+
 -- mob definition
 mobs = {}
 
@@ -17,7 +37,10 @@ mob = class({
   dir={x=0,y=0},
   flipped=false,
   sprites={
-    default=1,
+    standing=57,
+    walking=range(58,60),
+    dodging=61,
+    dying=dyinganim(62),
   },
   withsprites={},
   str=2,
@@ -44,7 +67,14 @@ function mob:init(x, y)
 end
 
 function mob:getsprite()
-  return self.sprites[self.sm.state] or self.sprites.default
+  local spr = self.sprites[self.sm.state]
+  if spr then
+    return spr
+  elseif self.dir.x == 0 and self.dir.y == 0 then
+    return self.sprites.standing
+  else
+    return self.sprites.walking
+  end
 end
 
 function mob:getwithsprite()
@@ -78,10 +108,29 @@ function mob:draw()
   -- rect(hb.x, hb.y, hb.x+hb.w, hb.y+hb.h, 8)
 end
 
+function mob:ismoving()
+  return self.dir.x + self.dir.y ~= 0
+end
+
+function mob:move()
+  local walkspd = 1 + self.spd/5
+  if (self.dodging) walkspd *= 2
+
+  if (self.dir.x ~= 0) self.flipped = self.dir.x < 0
+  self.x = bound(self.x+self.dir.x*walkspd, 0, 120)
+  self.y = bound(self.y+self.dir.y*walkspd, 58, 120)
+end
+
 function mob:update()
   self.sm:update(dt)
   for sprite in all{self:getsprite(), self:getwithsprite()} do
     if (sprite.advance) sprite:advance(dt)
+  end
+
+  if self:ismoving() then
+    self.sprites.walking:start(1/self.spd, true)
+  else
+    self.sprites.walking:stop()
   end
 end
 
@@ -161,7 +210,7 @@ function mob:hit(atk, other)
 end
 
 -- player definition
-player = mob.subclass({
+player = mob.subclass{
   color=7,
   wasatk=false,
   isatk=false,
@@ -170,7 +219,7 @@ player = mob.subclass({
   isdef=false,
   defcool=0.1,
   defcooldown=1,
-})
+}
 
 players = {}
 scores = map(range(1,4), function() return {tries=0, coins=0} end)
@@ -184,42 +233,16 @@ function player:init(p, x, y)
   self.score.tries += 1
 end
 
-function player:getsprite()
-  local spr = self.sprites[self.sm.state]
-  if spr then
-    return spr
-  elseif self.dir.x == 0 and self.dir.y == 0 then
-    return self.sprites.standing
-  else
-    return self.sprites.walking
-  end
-end
-
-function player:ismoving()
-  return self.dir.x + self.dir.y ~= 0
-end
-
 function player:update()
   mob.update(self)
-  local walkspd = 1 + self.spd/5
-  if self.dodging then
-    walkspd *= 2
-  else
+  if not self.dodging then
     self.dir = {x=0, y=0}
     if (btn(btns.l, self.p)) self.dir.x -=1
     if (btn(btns.r, self.p)) self.dir.x +=1
     if (btn(btns.u, self.p)) self.dir.y -=1
     if (btn(btns.d, self.p)) self.dir.y +=1
   end
-  if (self.dir.x ~= 0) self.flipped = self.dir.x < 0
-  self.x = bound(self.x+self.dir.x*walkspd, 0, 120)
-  self.y = bound(self.y+self.dir.y*walkspd, 58, 120)
-
-  if self:ismoving() then
-    self.sprites.walking:start(1/self.spd, true)
-  else
-    self.sprites.walking:stop()
-  end
+  self:move()
 
   if self.atkcool <= 0 then
     self.wasatk = self.isatk
@@ -290,26 +313,7 @@ end
 
 -- specific players
 
-function weaponsprites(sprites)
-  return {
-    default=sprites[2],
-    attacking={sprites[2], sprites[6], sprites[4]},
-    smashing=slice(sprites, 2,4),
-    striking=sprites[4],
-    holding=sprites[1],
-    winding=sprites[1],
-    staggered=sprites[1],
-    stunned=sprites[5],
-    overextended=sprites[5],
-    parrying=sprites[7],
-  }
-end
-
-function dyinganim(ps)
-  return {ps, ps, ps, ps, 1, 2, 3, 4}
-end
-
-blueplayer = player.subclass({
+blueplayer = player.subclass{
   name="ba'aur",
   color=12,
   sprites={
@@ -325,9 +329,9 @@ blueplayer = player.subclass({
   spd=3,
   def=4,
   rng=3,
-})
+}
 
-orangeplayer = player.subclass({
+orangeplayer = player.subclass{
   name="anjix",
   color=9,
   sprites={
@@ -343,9 +347,9 @@ orangeplayer = player.subclass({
   spd=1,
   def=2,
   rng=5,
-})
+}
 
-purpleplayer = player.subclass({
+purpleplayer = player.subclass{
   name="pyet'n",
   color=2,
   sprites={
@@ -361,9 +365,9 @@ purpleplayer = player.subclass({
   spd=5,
   def=1,
   rng=8,
-})
+}
 
-redplayer = player.subclass({
+redplayer = player.subclass{
   name="ruezzh",
   color=8,
   sprites={
@@ -381,7 +385,7 @@ redplayer = player.subclass({
   spd=2,
   def=2,
   rng=12,
-})
+}
 
 player_choices = {
   blueplayer,
@@ -389,6 +393,54 @@ player_choices = {
   purpleplayer,
   redplayer,
 }
+
+-- enemies
+
+villain = mob.subclass{
+  sprites={
+    standing=128,
+    walking=range(128,130),
+    dodging=131,
+    dying=dyinganim(132),
+  },
+  withsprites=weaponsprites(range(136,142)),
+}
+
+function villain:update()
+  mob.update(self)
+  if self.sm.state == "dying" then
+    return
+  end
+
+  if not self.target then
+    local d
+    for p, player in pairs(players) do
+      if not d or cabdist(self, player) < d then
+        self.target = player
+        d = cabdist(self, player)
+      end
+    end
+  elseif not players[self.target.p+1] then
+    self.target = nil
+  end
+
+  self.dir = {x=0, y=0}
+  if self.target then
+    local dx = self.target.x - self.x
+    if abs(dx) > (self.w+self.rng) then
+      dx = (self.target.x + self.target.w) - self.x
+      if dx > 0 then
+        dx = self.target.x - (self.x + self.w)
+      end
+      if (abs(dx) > 2) self.dir.x = sign(dx)
+    else
+      self.flipped = dx<0
+    end
+    local dy = self.target.y - self.y
+    if (abs(dy) > 2) self.dir.y = sign(dy)
+  end
+  self:move()
+end
 
 -- hud
 chooser = class{
@@ -649,6 +701,7 @@ end
 
 function _init()
   makestars(30+rnd(20))
+  villain(76, 76)
 end
 
 function _update()

@@ -32,6 +32,11 @@ function yesno(condition, yes, no)
   end
 end
 
+function sign(n)
+  if (n == 0) return n
+  return n/abs(n)
+end
+
 function range(s, e, t)
   local l = {}
   t = t or 1
@@ -57,6 +62,10 @@ function copy(t)
     c[k] = v
   end
   return c
+end
+
+function cabdist(a, b)
+  return abs(a.x-b.x) + abs(a.y-b.y)
 end
 
 function between(v, a, b)
