@@ -179,7 +179,8 @@ function mob:strike(heavy)
   end
   if #hits > 0 then
     self.sm:transition("strike")
-    self.score.coins += 5
+    -- TODO: move this to player
+    if (self.score) self.score.coins += 5
   else
     self.sm:transition("miss")
   end
@@ -235,6 +236,7 @@ end
 
 function player:update()
   mob.update(self)
+  if (self.sm.state == "dying") return
   if not self.dodging then
     self.dir = {x=0, y=0}
     if (btn(btns.l, self.p)) self.dir.x -=1
@@ -435,11 +437,16 @@ function villain:update()
       if (abs(dx) > 2) self.dir.x = sign(dx)
     else
       self.flipped = dx<0
+      self.sm:transition("attack")
     end
     local dy = self.target.y - self.y
     if (abs(dy) > 2) self.dir.y = sign(dy)
   end
   self:move()
+end
+
+function villain:exit_winding()
+  self.sm:transition("release")
 end
 
 -- hud
@@ -701,15 +708,21 @@ end
 
 function _init()
   makestars(30+rnd(20))
-  villain(76, 76)
 end
 
+villain_rate = 10
+vtime = 3
 function _update()
   hud:update()
   for m in all(mobs) do
     m:update()
   end
   time = fwrap(time+dt, 0, day)
+  vtime -= dt*count(players)
+  if vtime < 0 then
+    villain(rnd(128), rnd(64)+64)
+    vtime = villain_rate
+  end
 end
 
 function _draw()

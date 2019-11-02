@@ -37,6 +37,14 @@ function sign(n)
   return n/abs(n)
 end
 
+function count(t)
+  local c = 0
+  for k,v in pairs(t) do
+    c += 1
+  end
+  return c
+end
+
 function range(s, e, t)
   local l = {}
   t = t or 1
