@@ -29,6 +29,7 @@ end
 function statemachine:transition(action, ...)
   local trans = self:gettransition(action)
   if (trans) self:dotransition(trans, ...)
+  return trans
 end
 
 timedstatemachine = statemachine.subclass({statetimer=0, timeouts={}})

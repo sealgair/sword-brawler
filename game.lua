@@ -179,8 +179,6 @@ function mob:strike(heavy)
   end
   if #hits > 0 then
     self.sm:transition("strike")
-    -- TODO: move this to player
-    if (self.score) self.score.coins += 5
   else
     self.sm:transition("miss")
   end
@@ -189,6 +187,8 @@ end
 function mob:smash()
   self:strike(true)
 end
+
+function mob:addscore() end
 
 function mob:hit(atk, other)
   --[[
@@ -208,9 +208,17 @@ function mob:hit(atk, other)
     tr = 'heavyhit'
   end
   self.sm:transition(tr, nil, atk, other)
+  other:addscore(scorestypes[self.sm.state] or 0)
 end
 
 -- player definition
+
+scorestypes = {
+  stunned=2,
+  staggered=5,
+  dying=15,
+}
+
 player = mob.subclass{
   color=7,
   wasatk=false,
@@ -299,6 +307,10 @@ end
 
 function player:stop_dodge()
   self.dodging = nil
+end
+
+function player:addscore(s)
+  self.score.coins += s
 end
 
 function player:die()
