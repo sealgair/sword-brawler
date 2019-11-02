@@ -70,6 +70,9 @@ function mob:draw()
   else
     sprite:draw(self.x, self.y, self.flipped)
   end
+  -- debug
+  -- local hb = self:hitbox()
+  -- rect(hb.x, hb.y, hb.x+hb.w, hb.y+hb.h, 8)
 end
 
 function mob:update()
@@ -88,10 +91,11 @@ function mob:hitbox()
     x=self.x, y=self.y,
     w=self.w, h=self.h
   }
-  local sts = {attacking=true, parrying=true}
-  if sts[self.state] then
-    self.w += self.rng
-    if (self.flipped) hitbox.x -= self.rng
+  local sts = {attacking=true, smashing=true, striking=true, parrying=true}
+  if sts[self.sm.state] then
+    box.w += self.rng - self.w/2
+    box.x += self.w/2
+    if (self.flipped) box.x -= self.rng + self.w/2
   end
   return box
 end
@@ -145,7 +149,9 @@ function mob:hit(atk, other)
     * 4 defender killed
   ]]
   local tr = 'hit'
-  if atk > self.def then
+  if self.flipped == other.flipped then
+    tr = 'backstab'
+  elseif atk > self.def then
     tr = 'heavyhit'
   end
   self.sm:transition(tr, nil, atk, other)
