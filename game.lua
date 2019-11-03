@@ -34,6 +34,7 @@ mobs = {}
 mob = class({
   x=0, y=0,
   w=8, h=8,
+  knockback=0,
   dir={x=0,y=0},
   flipped=false,
   sprites={
@@ -119,6 +120,12 @@ function mob:move()
   if (self.dir.x ~= 0) self.flipped = self.dir.x < 0
   self.x = bound(self.x+self.dir.x*walkspd, 0, 120)
   self.y = bound(self.y+self.dir.y*walkspd, 58, 120)
+
+  if self.knockback ~= 0 then
+    local k = min(abs(self.knockback), 3)*sign(self.knockback)
+    self.x += k
+    self.knockback -= k
+  end
 end
 
 function mob:update()
@@ -207,8 +214,11 @@ function mob:hit(atk, other)
   elseif atk > self.def then
     tr = 'heavyhit'
   end
-   self.sm:transition(tr, nil, atk, other)
+  self.sm:transition(tr, nil, atk, other)
   other:addscore(scorestypes[self.sm.state] or 0)
+
+  --knockback
+  self.knockback += max(1, atk-self.def)^2/2*yesno(other.flipped, -1, 1)
 end
 
 -- player definition
@@ -737,7 +747,7 @@ function _update()
     m:update()
   end
   time = fwrap(time+dt, 0, day)
-  vtime -= dt*count(players)
+  -- vtime -= dt*count(players)
   if vtime < 0 then
     villain(flr(rnd(2))*138-9, rnd(64)+64)
     vtime = villain_rate[1] + rnd(villain_rate[2])
