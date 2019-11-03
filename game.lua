@@ -207,7 +207,7 @@ function mob:hit(atk, other)
   elseif atk > self.def then
     tr = 'heavyhit'
   end
-  self.sm:transition(tr, nil, atk, other)
+   self.sm:transition(tr, nil, atk, other)
   other:addscore(scorestypes[self.sm.state] or 0)
 end
 
@@ -722,8 +722,8 @@ function _init()
   makestars(30+rnd(20))
 end
 
-villain_rate = 10
-vtime = 3
+villain_rate = 6
+vtime = 1
 function _update()
   hud:update()
   for m in all(mobs) do
@@ -732,8 +732,8 @@ function _update()
   time = fwrap(time+dt, 0, day)
   vtime -= dt*count(players)
   if vtime < 0 then
-    villain(rnd(128), rnd(64)+64)
-    vtime = villain_rate
+    villain(flr(rnd(2))*138-9, rnd(64)+64)
+    vtime = villain_rate * .5 + rnd(villain_rate)
   end
 end
 
