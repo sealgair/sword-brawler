@@ -418,6 +418,8 @@ villain = mob.subclass{
     dying=dyinganim(132),
   },
   withsprites=weaponsprites(range(136,142)),
+  atkcool=0.1,
+  atkcooldown={0.5,2},
 }
 
 function villain:update()
@@ -438,7 +440,9 @@ function villain:update()
     self.target = nil
   end
 
+  self.atkcool = max(0, self.atkcool-dt)
   self.dir = {x=0, y=0}
+
   if self.target then
     local dx = self.target.x - self.x
     if abs(dx) > (self.w+self.rng) then
@@ -449,7 +453,10 @@ function villain:update()
       if (abs(dx) > 2) self.dir.x = sign(dx)
     else
       self.flipped = dx<0
-      self.sm:transition("attack")
+      if self.atkcool <= 0 then
+        self.sm:transition("attack")
+        self.atkcool = self.atkcooldown[1] + rnd(self.atkcooldown[2])
+      end
     end
     local dy = self.target.y - self.y
     if (abs(dy) > 2) self.dir.y = sign(dy)
@@ -722,7 +729,7 @@ function _init()
   makestars(30+rnd(20))
 end
 
-villain_rate = 6
+villain_rate = {3,3}
 vtime = 1
 function _update()
   hud:update()
@@ -733,7 +740,7 @@ function _update()
   vtime -= dt*count(players)
   if vtime < 0 then
     villain(flr(rnd(2))*138-9, rnd(64)+64)
-    vtime = villain_rate * .5 + rnd(villain_rate)
+    vtime = villain_rate[1] + rnd(villain_rate[2])
   end
 end
 

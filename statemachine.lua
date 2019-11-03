@@ -37,6 +37,7 @@ timedstatemachine = statemachine.subclass({statetimer=0, timeouts={}})
 function timedstatemachine:init(...)
   statemachine.init(self, ...)
   self.timeouts = copy(self.timeouts)
+  self.statetimer = self.timeouts[self.state] or 0
 end
 
 function timedstatemachine:dotransition(trans, timeout, ...)
@@ -61,8 +62,11 @@ function timedstatemachine:scaletimeouts(scale)
 end
 
 mobstatemachine = timedstatemachine.subclass({
-  state="defend",
+  state="spawned",
   transitions={
+    spawned={
+      timeout={to="defend"},
+    },
     defend={
       attack={to="winding"},
       hit={to="staggered"},
@@ -136,6 +140,7 @@ mobstatemachine = timedstatemachine.subclass({
     }
   },
   timeouts={
+    spawned=1,
     winding=0.4,
     dodging=0.15,
     parrying=0.3,
