@@ -2,23 +2,22 @@
 
 sprite = class()
 
-function sprite:init(n, joincolor, w, h, o)
-  if type(n) == "table" then
-    self.n = n.s
-    self.w = n.w or 1
-    self.h = n.h or 1
-    self.o = n.o
+function sprite:init(n, joincolor, w, h, o, so)
+  if type(n) ~= "table" then
+    n = {s=n, w=w, h=h, o=o, joincolor=joincolor}
   else
-    self.n = n
-    self.w = w or 1
-    self.h = h or 1
-    self.o = o
+    so = n.so
   end
-  if (self.w == nil) stop(self.n)
-  self.joincolor = joincolor or 11
+  self.n = n.s
+  self.w = n.w or 1
+  self.h = n.h or 1
+  self.o = n.o
+  self.joincolor = n.joincolor or 11
+  so = so or {}
 
   self.pswap = {}
   self.oswap = kmap(range(0,15), function(k,v) return v, self.o end) -- all o
+  for c in all(so) do self.oswap[c] = -1 end -- -1 becomes transparent
 
   local orig = sscoord(self.n)
   forbox(orig.x, orig.y, 8, 8, function(x,y)
@@ -45,7 +44,13 @@ function sprite:draw(x, y, flipx, flipy)
   if self.o then
     self:outline(x, y, flipx, flipy)
   end
-  for k,v in pairs(self.pswap) do pal(k, v) end
+  for k,v in pairs(self.pswap) do
+    if v < 0 then
+      palt(k, true)
+    else
+      pal(k, v)
+    end
+  end
   pal(self.joincolor, self.pswap[self.joinrepl] or self.joinrepl)
   if flipx and (self.w or 1) > 1 then
     x -= (self.w-1) * 8

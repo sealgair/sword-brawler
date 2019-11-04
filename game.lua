@@ -24,7 +24,9 @@ function weaponsprites(sprites)
 end
 
 function dyinganim(ps)
-  return {ps, ps, ps, ps, 1, 2, 3, 4}
+  return append({ps, ps, ps, ps}, map(range(1,4), function(s)
+    return {s=s, so={7,14}}
+  end))
 end
 
 
@@ -37,13 +39,18 @@ mob = class({
   knockback=0,
   dir={x=0,y=0},
   flipped=false,
+
+  outline=1,
   sprites={
     standing=57,
     walking=range(58,60),
     dodging=61,
     dying=dyinganim(62),
   },
+  skipoutline={},
   withsprites={},
+  withskipoutline={7,12,14},
+
   str=2,
   spd=2,
   def=2,
@@ -55,18 +62,22 @@ function mob:init(x, y)
   self.x = x
   self.y = y
 
-  function outlinesprite(s)
+  function outlinesprite(s, extra)
     if (type(s) ~= "table") s = {s=s}
-    if (not s.s) s = map(s, outlinesprite)
-    if (not s.o) s.o = 0
+    if (not s.s) return map(s, function(ss) return outlinesprite(ss, extra) end)
+    for k,v in pairs(extra) do
+      if (not s[k]) s[k] = v
+    end
     return s
   end
-  function makeoutline(s)
-    return makesprite(outlinesprite(s))
+  function makeoutline(extra)
+    return function(s)
+      return makesprite(outlinesprite(s, extra))
+    end
   end
 
-  self.sprites = map(self.sprites, makeoutline)
-  self.withsprites = map(self.withsprites, makesprite)
+  self.sprites = map(self.sprites, makeoutline{o=self.outline, so=self.skipoutline})
+  self.withsprites = map(self.withsprites, makeoutline{o=self.outline, so=self.withskipoutline})
 
   self.sm = mobstatemachine(self)
   local speedup = (8-self.spd)/7
@@ -437,7 +448,9 @@ villain = mob.subclass{
     dodging=131,
     dying=dyinganim(132),
   },
+  skipoutline={7},
   withsprites=weaponsprites(range(136,142)),
+  withskipoutline={12,14,15},
   atkcool=0.1,
   atkcooldown={0.5,2},
 }
@@ -772,6 +785,7 @@ function _draw()
   end
   hud:draw()
 
-  color(7)
-  print(stat(0), 5, 120)
+  -- debug
+  -- color(7)
+  -- print(stat(0), 5, 120)
 end

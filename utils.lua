@@ -89,13 +89,27 @@ function kmap(l, fn)
   local new = {}
   for k,v in pairs(l) do
     k,v = fn(k,v)
-    new[k] = v
+    if (k) new[k] = v
   end
   return new
 end
 
 function map(l, fn)
   return kmap(l, function(k,v) return k, fn(v) end)
+end
+
+function invert(t)
+  return kmap(t, function(k,v) return v,k end)
+end
+
+function append(...)
+  r = {}
+  for t in all{...} do
+    for v in all(t) do
+      add(r, v)
+    end
+  end
+  return r
 end
 
 function sscoord(s)
