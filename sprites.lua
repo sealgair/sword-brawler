@@ -44,6 +44,7 @@ function sprite:draw(x, y, flipx, flipy)
   if self.o then
     self:outline(x, y, flipx, flipy)
   end
+  pal(self.joincolor, self.joinrepl)
   for k,v in pairs(self.pswap) do
     if v < 0 then
       palt(k, true)
@@ -51,7 +52,6 @@ function sprite:draw(x, y, flipx, flipy)
       pal(k, v)
     end
   end
-  pal(self.joincolor, self.pswap[self.joinrepl] or self.joinrepl)
   if flipx and (self.w or 1) > 1 then
     x -= (self.w-1) * 8
   end
