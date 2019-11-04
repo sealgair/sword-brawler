@@ -15,7 +15,7 @@ function sprite:init(n, joincolor, w, h, o, so)
   self.joincolor = n.joincolor or 11
   so = so or {}
 
-  self.pswap = {}
+  self.pswap = n.pswap or {}
   self.oswap = kmap(range(0,15), function(k,v) return v, self.o end) -- all o
   for c in all(so) do self.oswap[c] = -1 end -- -1 becomes transparent
 

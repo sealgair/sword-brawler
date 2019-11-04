@@ -112,6 +112,10 @@ function append(...)
   return r
 end
 
+function rndchoice(t)
+  return t[ceil(rnd(#t))]
+end
+
 function sscoord(s)
   return {
     x = (s%16)*8,

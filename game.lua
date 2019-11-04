@@ -57,7 +57,7 @@ mob = class({
   rng=2,
 })
 
-function mob:init(x, y)
+function mob:init(x, y, pswap)
   add(mobs, self)
   self.x = x
   self.y = y
@@ -76,8 +76,15 @@ function mob:init(x, y)
     end
   end
 
-  self.sprites = map(self.sprites, makeoutline{o=self.outline, so=self.skipoutline})
-  self.withsprites = map(self.withsprites, makeoutline{o=self.outline, so=self.withskipoutline})
+  self.sprites = map(self.sprites, makeoutline{
+    o=self.outline,
+    pswap=pswap,
+    so=self.skipoutline,
+  })
+  self.withsprites = map(self.withsprites, makeoutline{
+    o=self.outline,
+    so=self.withskipoutline,
+  })
 
   self.sm = mobstatemachine(self)
   local speedup = (8-self.spd)/7
@@ -441,6 +448,12 @@ player_choices = {
 
 -- enemies
 
+villain_palettes = {
+  {},
+  {[8]=3, [9]=11, [4]=1},
+  {[8]=4, [9]=15, [4]=5},
+}
+
 villain = mob.subclass{
   sprites={
     standing=128,
@@ -772,7 +785,7 @@ function _update60()
   dtime = fwrap(dtime+dt, 0, day)
   vtime -= dt*count(players)
   if vtime < 0 then
-    villain(flr(rnd(2))*138-9, rnd(64)+64)
+    villain(flr(rnd(2))*138-9, rnd(64)+64, rndchoice(villain_palettes))
     vtime = villain_rate[1] + rnd(villain_rate[2])
   end
 end
