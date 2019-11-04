@@ -6,7 +6,7 @@ btns={
   atk=🅾️,
   def=❎,
 }
-dt = 1/30
+dt = 1/60
 
 function weaponsprites(sprites)
   return {
@@ -114,12 +114,12 @@ function mob:ismoving()
 end
 
 function mob:move()
-  local walkspd = 1 + self.spd/5
+  local walkspd = 1 + self.spd*10
   if (self.dodging) walkspd *= 2
 
   if (self.dir.x ~= 0) self.flipped = self.dir.x < 0
-  self.x = bound(self.x+self.dir.x*walkspd, 0, 120)
-  self.y = bound(self.y+self.dir.y*walkspd, 58, 120)
+  self.x = bound(self.x+self.dir.x*walkspd*dt, 0, 120)
+  self.y = bound(self.y+self.dir.y*walkspd*dt, 58, 120)
 
   if self.knockback ~= 0 then
     local k = min(abs(self.knockback), 3)*sign(self.knockback)
@@ -310,9 +310,9 @@ function player:exit_winding()
   end
 end
 
-function player:start_dodge(time)
+function player:start_dodge(dtime)
   self.dodging = self.dir
-  self.sprites.dodging:start(time)
+  self.sprites.dodging:start(dtime)
 end
 
 function player:stop_dodge()
@@ -368,7 +368,7 @@ orangeplayer = player.subclass{
   },
   withsprites=weaponsprites(range(48,54)),
   str=5,
-  spd=1,
+  spd=2,
   def=2,
   rng=5,
 }
@@ -406,7 +406,7 @@ redplayer = player.subclass{
     return {s=s, w=2}
   end)),
   str=2,
-  spd=2,
+  spd=3,
   def=2,
   rng=12,
 }
@@ -652,9 +652,9 @@ function hud:update()
 end
 
 -- background
-day=60*5
-twilight=day*0.04
-time=day*0.75+twilight+rnd(day*.25)
+day = 60*5
+twilight = day*0.04
+dtime = day*0.75+twilight+rnd(day*.25)
 
 planets = {
   {
@@ -690,7 +690,7 @@ twilight_colors={13,14,2,1}
 function draw_sky()
   -- 0 is noon, 0.5 is midnight
   -- 0.25 is dusk, 0.75 is dawn
-  local t = (time/day)
+  local t = (dtime/day)
   local cn=#twilight_colors
   local twl = twilight/day
   local twl2 = twl/2
@@ -741,13 +741,13 @@ end
 
 villain_rate = {3,3}
 vtime = 1
-function _update()
+function _update60()
   hud:update()
   for m in all(mobs) do
     m:update()
   end
-  time = fwrap(time+dt, 0, day)
-  -- vtime -= dt*count(players)
+  dtime = fwrap(dtime+dt, 0, day)
+  vtime -= dt*count(players)
   if vtime < 0 then
     villain(flr(rnd(2))*138-9, rnd(64)+64)
     vtime = villain_rate[1] + rnd(villain_rate[2])
