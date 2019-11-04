@@ -85,12 +85,17 @@ function intersects(a, b)
       (a.y+a.h >= b.y and b.y+b.h >= a.y)
 end
 
-function map(l, fn)
+function kmap(l, fn)
   local new = {}
   for k,v in pairs(l) do
-    new[k] = fn(v)
+    k,v = fn(k,v)
+    new[k] = v
   end
   return new
+end
+
+function map(l, fn)
+  return kmap(l, function(k,v) return k, fn(v) end)
 end
 
 function sscoord(s)

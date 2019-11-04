@@ -2,18 +2,23 @@
 
 sprite = class()
 
-function sprite:init(n, joincolor, w, h)
+function sprite:init(n, joincolor, w, h, o)
   if type(n) == "table" then
     self.n = n.s
     self.w = n.w or 1
     self.h = n.h or 1
+    self.o = n.o
   else
     self.n = n
     self.w = w or 1
     self.h = h or 1
+    self.o = o
   end
   if (self.w == nil) stop(self.n)
   self.joincolor = joincolor or 11
+
+  self.pswap = {}
+  self.oswap = kmap(range(0,15), function(k,v) return v, self.o end) -- all o
 
   local orig = sscoord(self.n)
   forbox(orig.x, orig.y, 8, 8, function(x,y)
@@ -37,7 +42,11 @@ function sprite:start() end
 function sprite:stop() end
 
 function sprite:draw(x, y, flipx, flipy)
-  pal(self.joincolor, self.joinrepl)
+  if self.o then
+    self:outline(x, y, flipx, flipy)
+  end
+  for k,v in pairs(self.pswap) do pal(k, v) end
+  pal(self.joincolor, self.pswap[self.joinrepl] or self.joinrepl)
   if flipx and (self.w or 1) > 1 then
     x -= (self.w-1) * 8
   end
@@ -45,13 +54,31 @@ function sprite:draw(x, y, flipx, flipy)
   pal()
 end
 
+function sprite:outline(x, y, flipx, flipy)
+  local oldpswap = self.pswap
+  local oldo = self.o
+  self.pswap = self.oswap
+  self.o = false
+  forbox(-1,-1,2,2, function(dx,dy)
+    if dx == 0 or dy == 0 then
+      self:draw(x+dx, y+dy, flipx, flipy)
+    end
+  end)
+  self.o = oldo
+  self.pswap = oldpswap
+end
+
 function sprite:drawwith(other, x, y, flipx, flipy)
-  color(7)
+  local wx = x + (self.join.x - other.join.x) * yesno(flipx, -1, 1)
+  local wy = y + (self.join.y - other.join.y) * yesno(flipy, -1, 1)
+  if other.o then
+    other:outline(wx, wy, flipx, flipy)
+  end
   self:draw(x, y, flipx, flipy)
-  x = x + (self.join.x - other.join.x) * yesno(flipx, -1, 1)
-  y = y + (self.join.y - other.join.y) * yesno(flipy, -1, 1)
-  -- rect(x, y, x+other.w*8, y+other.h*8, 14)
-  other:draw(x, y, flipx, flipy)
+  local oldo = other.o
+  other.o = false
+  other:draw(wx, wy, flipx, flipy)
+  other.o = oldo
 end
 
 -- animation

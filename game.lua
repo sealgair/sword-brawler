@@ -55,7 +55,17 @@ function mob:init(x, y)
   self.x = x
   self.y = y
 
-  self.sprites = map(self.sprites, makesprite)
+  function outlinesprite(s)
+    if (type(s) ~= "table") s = {s=s}
+    if (not s.s) s = map(s, outlinesprite)
+    if (not s.o) s.o = 0
+    return s
+  end
+  function makeoutline(s)
+    return makesprite(outlinesprite(s))
+  end
+
+  self.sprites = map(self.sprites, makeoutline)
   self.withsprites = map(self.withsprites, makesprite)
 
   self.sm = mobstatemachine(self)
@@ -761,4 +771,7 @@ function _draw()
     m:draw()
   end
   hud:draw()
+
+  color(7)
+  print(stat(0), 5, 120)
 end
