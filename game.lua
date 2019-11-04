@@ -25,7 +25,7 @@ end
 
 function dyinganim(ps)
   return append({ps, ps, ps, ps}, map(range(1,4), function(s)
-    return {s=s, so={7,14}}
+    return {s=s, so={7,14}, pswap={}}
   end))
 end
 
@@ -450,8 +450,9 @@ player_choices = {
 
 villain_palettes = {
   {},
-  {[8]=3, [9]=11, [4]=1},
-  {[8]=4, [9]=15, [4]=5},
+  {[8]=3, [9]=11, [4]=1, [10]=12},
+  {[8]=4, [9]=15, [4]=5, [10]=8},
+  {[8]=6, [9]=7, [4]=5, [10]=2, [14]=13},
 }
 
 villain = mob.subclass{
