@@ -2,7 +2,17 @@ pico-8 cartridge // http://www.pico-8.com
 version 18
 __lua__
 -- moq-tarnix: the three worlds
--- by chase caster 
+-- by chase caster
+
+btns={
+  l=⬅️,
+  r=➡️,
+  u=⬆️,
+  d=⬇️,
+  atk=🅾️,
+  def=❎,
+}
+dt = 1/60
 
 #include utils.lua
 #include sprites.lua
@@ -10,6 +20,7 @@ __lua__
 #include mob.lua
 #include player.lua
 #include villain.lua
+#include hud.lua
 #include game.lua
 
 __gfx__
