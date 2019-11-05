@@ -127,18 +127,27 @@ function mob:draw()
   -- rect(hb.x, hb.y, hb.x+hb.w, hb.y+hb.h, 8)
 end
 
+
+nomovestates = {
+  stunned=true,
+  staggered=true,
+  spawned=true,
+}
 function mob:ismoving()
+  if (nomovestates[self.sm.state]) return false
   return self.dir.x + self.dir.y ~= 0
 end
 
 function mob:move()
-  local walkspd = 1 + self.spd*10
-  if (self.dodging) walkspd *= 2
+  if self:ismoving() then
+    local walkspd = 1 + self.spd*10
+    if (self.dodging) walkspd *= 2
 
-  -- TODO: generalize this so it works for villains too
-  if (not self.isatk and self.dir.x ~= 0) self.flipped = self.dir.x < 0
-  self.x = bound(self.x+self.dir.x*walkspd*dt, 0, 120)
-  self.y = bound(self.y+self.dir.y*walkspd*dt, 58, 120)
+    -- TODO: generalize atk check so it works for villains too
+    if (not self.isatk and self.dir.x ~= 0) self.flipped = self.dir.x < 0
+    self.x = bound(self.x+self.dir.x*walkspd*dt, 0, 120)
+    self.y = bound(self.y+self.dir.y*walkspd*dt, 58, 120)
+  end
 
   if self.knockback ~= 0 then
     local k = min(abs(self.knockback), 3)*sign(self.knockback)
@@ -191,8 +200,17 @@ function mob:collides()
   return hits
 end
 
+-- i just parried an attack
+function mob:parry(timeout, atk, other)
+  other:parried(atk, selfx)
+end
+
+-- my attack was parried
 function mob:parried(atk, other)
-  if atk < self.def then
+  if atk > self.def then
+    self.sm:transition("parried")
+  else
+    self.sm:transition("defended")
   end
 end
 

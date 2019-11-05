@@ -86,8 +86,8 @@ function _init()
   makestars(30+rnd(20))
 end
 
-villain_rate = {3,3}
-vtime = 1
+villain_rate = {2,3}
+vtime = 0.1
 function _update60()
   hud:update()
   for m in all(mobs) do
@@ -95,8 +95,8 @@ function _update60()
   end
   dtime = fwrap(dtime+dt, 0, day)
   vtime -= dt*count(players)
-  if vtime < 0 then
-    villain(flr(rnd(2))*138-9, rnd(64)+64, rndchoice(villain_palettes))
+  if vtime <= 0 then
+    villain(flr(rnd(2))*139-10, rnd(64)+64, rndchoice(villain_palettes))
     vtime = villain_rate[1] + rnd(villain_rate[2])
   end
 end

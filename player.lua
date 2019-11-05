@@ -14,7 +14,7 @@ player = mob.subclass{
   atkcool=0.1,
   isdef=false,
   defcool=0.1,
-  defcooldown=1,
+  defcooldown=0.6,
 }
 
 players = {}
