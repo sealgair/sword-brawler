@@ -19,7 +19,13 @@ villain = mob.subclass{
   withskipoutline={12,14,15},
   atkcool=0.1,
   atkcooldown={0.5,2},
+  defcool=0.1,
+  defcooldown=0.3,
 }
+
+function villain:enter_defend()
+  self.defcool = self.defcooldown
+end
 
 function villain:update()
   mob.update(self)
@@ -40,20 +46,21 @@ function villain:update()
   end
 
   self.atkcool = max(0, self.atkcool-dt)
+  self.defcool = max(0, self.defcool-dt)
   self.dir = {x=0, y=0}
 
   if self.target then
     local dx = self.target.x - self.x
-    if abs(dx) > (self.w+self.rng) then
+    if abs(dx) >= (self.w+self.rng) then
       dx = (self.target.x + self.target.w) - self.x
       if dx > 0 then
         dx = self.target.x - (self.x + self.w)
       end
       if (abs(dx) > 2) self.dir.x = sign(dx)
     else
-      self.flipped = dx<0
       if self.atkcool <= 0 then
-        self.sm:transition("attack")
+        self.flipped = dx<0
+        if (rnd(3) > 1) self.sm:transition("attack")
         self.atkcool = self.atkcooldown[1] + rnd(self.atkcooldown[2])
       end
     end

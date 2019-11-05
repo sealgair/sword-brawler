@@ -134,7 +134,7 @@ nomovestates = {
 }
 function mob:ismoving()
   if (nomovestates[self.sm.state]) return false
-  return self.dir.x + self.dir.y ~= 0
+  return self.dir.x ~= 0 or self.dir.y ~= 0
 end
 
 function mob:move()
