@@ -1,9 +1,15 @@
 pico-8 cartridge // http://www.pico-8.com
 version 18
 __lua__
+-- moq-tarnix: the three worlds
+-- by chase caster 
+
 #include utils.lua
 #include sprites.lua
 #include statemachine.lua
+#include mob.lua
+#include player.lua
+#include villain.lua
 #include game.lua
 
 __gfx__

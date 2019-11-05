@@ -1,0 +1,240 @@
+function weaponsprites(sprites)
+  return {
+    default=sprites[2],
+    attacking={sprites[2], sprites[6], sprites[4]},
+    smashing=slice(sprites, 2,4),
+    striking=sprites[4],
+    holding=sprites[1],
+    winding=sprites[1],
+    staggered=sprites[1],
+    stunned=sprites[5],
+    overextended=sprites[5],
+    parrying=sprites[7],
+  }
+end
+
+function dyinganim(ps)
+  return append({ps, ps, {s=ps, o=false}}, map(range(1,4), function(s)
+    return {s=s, so={7,14}, pswap={}, o=false}
+  end))
+end
+
+-- mob definition
+
+mobs = {}
+
+mob = class({
+  x=0, y=0,
+  w=8, h=8,
+  knockback=0,
+  dir={x=0,y=0},
+  flipped=false,
+
+  outline=1,
+  sprites={
+    standing=57,
+    walking=range(58,60),
+    dodging=61,
+    dying=dyinganim(62),
+  },
+  skipoutline={},
+  withsprites={},
+  withskipoutline={7,12,14},
+
+  str=2,
+  spd=2,
+  def=2,
+  rng=2,
+})
+
+function mob:init(x, y, pswap)
+  add(mobs, self)
+  self.x = x
+  self.y = y
+
+  function outlinesprite(s, extra)
+    if (type(s) ~= "table") s = {s=s}
+    if (not s.s) return map(s, function(ss) return outlinesprite(ss, extra) end)
+    for k,v in pairs(extra) do
+      if (s[k] == nil) s[k] = v
+    end
+    return s
+  end
+  function makeoutline(extra)
+    return function(s)
+      return makesprite(outlinesprite(s, extra))
+    end
+  end
+
+  self.sprites = map(self.sprites, makeoutline{
+    o=self.outline,
+    pswap=pswap,
+    so=self.skipoutline,
+  })
+  self.withsprites = map(self.withsprites, makeoutline{
+    o=self.outline,
+    so=self.withskipoutline,
+  })
+
+  self.sm = mobstatemachine(self)
+  local speedup = (8-self.spd)/7
+  self.sm.timeouts.winding *= speedup
+  self.sm.timeouts.attacking *= speedup
+  self.sm.timeouts.overextended *= speedup
+  self.sm.timeouts.dodging /= speedup
+  self.sm.timeouts.parrying *= (1+((self.def-1)/3))
+end
+
+function mob:getsprite()
+  local spr = self.sprites[self.sm.state]
+  if spr then
+    return spr
+  elseif self.dir.x == 0 and self.dir.y == 0 then
+    return self.sprites.standing
+  else
+    return self.sprites.walking
+  end
+end
+
+function mob:getwithsprite()
+  return self.withsprites[self.sm.state] or self.withsprites.default
+end
+
+function mob:enter_state(state, timeout)
+  if timeout ~= nil and timeout > 0 then
+    for sprite in all{self:getsprite(), self:getwithsprite()} do
+      sprite:start(timeout)
+    end
+  end
+end
+
+function mob:exit_state(state)
+  for sprite in all{self:getsprite(), self:getwithsprite()} do
+    sprite:stop()
+  end
+end
+
+function mob:draw()
+  local sprite = self:getsprite()
+  local withsprite = self:getwithsprite()
+  if withsprite ~= nil and sprite.join then
+    sprite:drawwith(withsprite, self.x, self.y, self.flipped)
+  else
+    sprite:draw(self.x, self.y, self.flipped)
+  end
+  -- debug
+  -- local hb = self:hitbox()
+  -- rect(hb.x, hb.y, hb.x+hb.w, hb.y+hb.h, 8)
+end
+
+function mob:ismoving()
+  return self.dir.x + self.dir.y ~= 0
+end
+
+function mob:move()
+  local walkspd = 1 + self.spd*10
+  if (self.dodging) walkspd *= 2
+
+  if (self.dir.x ~= 0) self.flipped = self.dir.x < 0
+  self.x = bound(self.x+self.dir.x*walkspd*dt, 0, 120)
+  self.y = bound(self.y+self.dir.y*walkspd*dt, 58, 120)
+
+  if self.knockback ~= 0 then
+    local k = min(abs(self.knockback), 3)*sign(self.knockback)
+    self.x += k
+    self.knockback -= k
+  end
+end
+
+function mob:update()
+  self.sm:update(dt)
+  for sprite in all{self:getsprite(), self:getwithsprite()} do
+    if (sprite.advance) sprite:advance(dt)
+  end
+
+  if self:ismoving() then
+    self.sprites.walking:start(1/self.spd, true)
+  else
+    self.sprites.walking:stop()
+  end
+end
+
+function mob:die()
+  del(mobs, self)
+end
+
+function mob:hitbox()
+  local box = {
+    x=self.x, y=self.y,
+    w=self.w, h=self.h
+  }
+  local sts = {attacking=true, smashing=true, striking=true, parrying=true}
+  if sts[self.sm.state] then
+    box.w += self.rng - self.w/2
+    box.x += self.w/2
+    if (self.flipped) box.x -= self.rng + self.w/2
+  end
+  return box
+end
+
+function mob:collides()
+  local hits = {}
+  for mob in all(mobs) do
+    if mob ~= self then
+      -- check boxes for overlap
+      if intersects(self:hitbox(), mob:hitbox()) then
+        add(hits, mob)
+      end
+    end
+  end
+  return hits
+end
+
+function mob:parried(atk, other)
+  if atk < self.def then
+  end
+end
+
+function mob:strike(heavy)
+  local hits = self:collides()
+  local str = self.str
+  if (heavy) str *= 1.5
+  for hit in all(hits) do
+    hit:hit(str, self)
+  end
+  if #hits > 0 then
+    self.sm:transition("strike")
+  else
+    self.sm:transition("miss")
+  end
+end
+
+function mob:smash()
+  self:strike(true)
+end
+
+function mob:addscore() end
+
+function mob:hit(atk, other)
+  --[[
+  TODO:
+  * attack superiority: str+atkstr - def:
+    * <-1 atk stagger
+    * <=0 both stagger (can’t attack, can defend)
+    * 1 defender staggers
+    * 2 defender stunned
+    * 3 defender knocked down
+    * 4 defender killed
+  ]]
+  local tr = 'hit'
+  if self.flipped == other.flipped then
+    tr = 'backstab'
+  elseif atk > self.def then
+    tr = 'heavyhit'
+  end
+  self.sm:transition(tr, nil, atk, other)
+  other:addscore(scorestypes[self.sm.state] or 0)
+
+  --knockback
+  self.knockback += max(1, atk-self.def)^2/2*yesno(other.flipped, -1, 1)
+end
