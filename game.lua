@@ -24,8 +24,8 @@ function weaponsprites(sprites)
 end
 
 function dyinganim(ps)
-  return append({ps, ps, ps, ps}, map(range(1,4), function(s)
-    return {s=s, so={7,14}, pswap={}}
+  return append({ps, ps, {s=ps, o=false}}, map(range(1,4), function(s)
+    return {s=s, so={7,14}, pswap={}, o=false}
   end))
 end
 
@@ -66,7 +66,7 @@ function mob:init(x, y, pswap)
     if (type(s) ~= "table") s = {s=s}
     if (not s.s) return map(s, function(ss) return outlinesprite(ss, extra) end)
     for k,v in pairs(extra) do
-      if (not s[k]) s[k] = v
+      if (s[k] == nil) s[k] = v
     end
     return s
   end
