@@ -82,8 +82,17 @@ end
 
 -- system callbacks
 
+function toggle_friendlyfire(skiptoggle)
+  if skiptoggle == nil then
+    friendlyfire = not friendlyfire
+    dset(savekeys.friendlyfire, yesno(friendlyfire, 1, 0))
+  end
+  menuitem(1, "dmg allies [" .. yesno(friendlyfire, "on", "off") .. "]", toggle_friendlyfire)
+end
+
 function _init()
   makestars(30+rnd(20))
+  toggle_friendlyfire(true)
 end
 
 villain_rate = {2,3}

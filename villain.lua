@@ -8,6 +8,7 @@ villain_palettes = {
 }
 
 villain = mob.subclass{
+  team="villains",
   sprites={
     standing=128,
     walking=range(128,130),

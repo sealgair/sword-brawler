@@ -7,6 +7,7 @@ scorestypes = {
 }
 
 player = mob.subclass{
+  team="players",
   color=7,
   wasatk=false,
   isatk=false,

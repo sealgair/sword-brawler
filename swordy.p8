@@ -4,16 +4,7 @@ __lua__
 -- moq-tarnix: the three worlds
 -- by chase caster
 
-btns={
-  l=⬅️,
-  r=➡️,
-  u=⬆️,
-  d=⬇️,
-  atk=🅾️,
-  def=❎,
-}
-dt = 1/60
-
+#include settings.lua
 #include utils.lua
 #include sprites.lua
 #include statemachine.lua
