@@ -75,7 +75,7 @@ mobstatemachine = timedstatemachine.subclass({
       heavyhit={to="stunned"},
       backstab={to="dying"},
       parry={to="parrying"},
-      dodge={to="dodging", callback="start_dodge"},
+      dodge={to="dodging"},
       parried={to="stunned"},
       defended={to="staggered"},
     },
@@ -86,7 +86,7 @@ mobstatemachine = timedstatemachine.subclass({
       backstab={to="dying"},
     },
     winding={
-      timeout={to="holding", callback="exit_winding"},
+      timeout={to="holding", callback="unwind"},
       hit={to="dying"},
       heavyhit={to="dying"},
       backstab={to="dying"},
@@ -100,7 +100,7 @@ mobstatemachine = timedstatemachine.subclass({
       backstab={to="dying"},
     },
     dodging={
-      timeout={to="recover", callback="stop_dodge"},
+      timeout={to="recover"},
     },
     recover={
       timeout={to="defend"},

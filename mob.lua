@@ -30,6 +30,10 @@ mob = class({
   dir={x=0,y=0},
   flipped=false,
 
+  atkcool=0.1,
+  defcool=0.1,
+  defcooldown=0.4,
+
   outline=1,
   sprites={
     standing=57,
@@ -199,9 +203,24 @@ function mob:collides()
   return hits
 end
 
+function mob:enter_dodging(dtime)
+  self.dodging = self.dir
+  self.sprites.dodging:start(dtime)
+end
+
+function mob:exit_dodging()
+  self.dodging = nil
+  self.defcool = self.defcooldown
+end
+
+function mob:exit_parrying()
+  self.defcool = self.defcooldown
+end
+
 -- i just parried an attack
 function mob:parry(timeout, atk, other)
   other:parried(atk, selfx)
+  self:addscore(8)
 end
 
 -- my attack was parried

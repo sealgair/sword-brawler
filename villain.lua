@@ -17,14 +17,20 @@ villain = mob.subclass{
   skipoutline={7},
   withsprites=weaponsprites(range(136,142)),
   withskipoutline={12,14,15},
-  atkcool=0.1,
+
   atkcooldown={0.5,2},
-  defcool=0.1,
-  defcooldown=0.3,
 }
 
 function villain:enter_defend()
   self.defcool = self.defcooldown
+end
+
+function villain:unwind()
+  if self:ismoving() then
+    self.sm:transition("release")
+  else
+    self.sm:transition("smash")
+  end
 end
 
 function villain:update()

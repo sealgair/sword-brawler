@@ -11,10 +11,7 @@ player = mob.subclass{
   wasatk=false,
   isatk=false,
   wasdef=false,
-  atkcool=0.1,
   isdef=false,
-  defcool=0.1,
-  defcooldown=0.3,
 }
 
 players = {}
@@ -27,10 +24,6 @@ function player:init(p, x, y)
   players[p] = self
   self.score = scores[p]
   self.score.tries += 1
-end
-
-function player:enter_defend()
-  self.defcool = self.defcooldown
 end
 
 function player:update()
@@ -79,7 +72,7 @@ function player:update()
   end
 end
 
-function player:exit_winding()
+function player:unwind()
   if not self.isatk then
     if self:ismoving() then
       self.sm:transition("release")
@@ -87,15 +80,6 @@ function player:exit_winding()
       self.sm:transition("smash")
     end
   end
-end
-
-function player:start_dodge(dtime)
-  self.dodging = self.dir
-  self.sprites.dodging:start(dtime)
-end
-
-function player:stop_dodge()
-  self.dodging = nil
 end
 
 function player:addscore(s)
