@@ -135,7 +135,8 @@ function mob:move()
   local walkspd = 1 + self.spd*10
   if (self.dodging) walkspd *= 2
 
-  if (self.dir.x ~= 0) self.flipped = self.dir.x < 0
+  -- TODO: generalize this so it works for villains too
+  if (not self.isatk and self.dir.x ~= 0) self.flipped = self.dir.x < 0
   self.x = bound(self.x+self.dir.x*walkspd*dt, 0, 120)
   self.y = bound(self.y+self.dir.y*walkspd*dt, 58, 120)
 
