@@ -87,9 +87,8 @@ end
 
 function mob:getsprite()
   local spr = self.sprites[self.sm.state]
-  if spr then
-    return spr
-  elseif self.dir.x == 0 and self.dir.y == 0 then
+  if (spr) return spr
+  if not self:ismoving() then
     return self.sprites.standing
   else
     return self.sprites.walking

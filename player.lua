@@ -14,7 +14,7 @@ player = mob.subclass{
   atkcool=0.1,
   isdef=false,
   defcool=0.1,
-  defcooldown=0.6,
+  defcooldown=0.3,
 }
 
 players = {}
@@ -27,6 +27,10 @@ function player:init(p, x, y)
   players[p] = self
   self.score = scores[p]
   self.score.tries += 1
+end
+
+function player:enter_defend()
+  self.defcool = self.defcooldown
 end
 
 function player:update()
@@ -66,10 +70,8 @@ function player:update()
     if self.sm.state == "defend" then
       if self:ismoving() then
         self.sm:transition("dodge")
-        self.defcool = self.defcooldown
       else
         self.sm:transition("parry")
-        self.defcool = self.defcooldown
       end
     else
       self.sm:transition("cancel")

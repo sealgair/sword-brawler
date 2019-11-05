@@ -19,8 +19,10 @@ end
 
 function statemachine:dotransition(trans, ...)
   if (self.target.exit_state) self.target:exit_state(self.state, ...)
+  if (self.target["exit_"..self.state]) self.target["exit_"..self.state](self.target, self.state, ...)
   self.state = trans.to
   if (self.target.enter_state) self.target:enter_state(self.state, ...)
+  if (self.target["enter_"..self.state]) self.target["enter_"..self.state](self.target, self.state, ...)
   if trans.callback ~= nil and self.target[trans.callback] ~= nil then
     self.target[trans.callback](self.target, ...)
   end
@@ -147,11 +149,11 @@ mobstatemachine = timedstatemachine.subclass({
     }
   },
   timeouts={
-    spawned=1,
+    spawned=0.8,
     winding=0.4,
     dodging=0.15,
     recover=0.4,
-    parrying=0.4,
+    parrying=0.3,
     attacking=0.2,
     smashing=0.3,
     staggered=0.25,
