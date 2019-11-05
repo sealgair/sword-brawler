@@ -96,7 +96,10 @@ mobstatemachine = timedstatemachine.subclass({
       backstab={to="dying"},
     },
     dodging={
-      timeout={to="defend", callback="stop_dodge"},
+      timeout={to="recover", callback="stop_dodge"},
+    },
+    recover={
+      timeout={to="defend"},
     },
     parrying={
       timeout={to="defend"},
@@ -143,7 +146,8 @@ mobstatemachine = timedstatemachine.subclass({
     spawned=1,
     winding=0.4,
     dodging=0.15,
-    parrying=0.3,
+    recover=0.4,
+    parrying=0.4,
     attacking=0.2,
     smashing=0.3,
     staggered=0.25,
