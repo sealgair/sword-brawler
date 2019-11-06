@@ -203,7 +203,7 @@ function mob:collides()
   return hits
 end
 
-function mob:enter_dodging(dtime)
+function mob:enter_dodging(state, dtime)
   self.dodging = self.dir
   self.sprites.dodging:start(dtime)
 end

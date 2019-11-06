@@ -88,7 +88,7 @@ end
 
 -- animation
 animation = sprite.subclass({
-  looping=false
+  looping=false, t=0, d=0,
 })
 
 function animation:init(sprites)

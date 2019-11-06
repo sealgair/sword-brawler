@@ -29,20 +29,16 @@ function chooser:update()
     local dx = 0
     if (btnp(btns.l, bp)) dx -=1
     if (btnp(btns.r, bp)) dx +=1
-    self.choice += dx
-    self.choice = wrap(self.choice, 1, #player_choices)
 
     -- don't allow two players to choose the same character
-    --  (i think this works)
-    dx = dx or 1
     local chosen = {}
     for k, p in pairs(players) do
       chosen[p.type] = true
     end
-    while chosen[player_choices[self.choice]] ~= nil do
-      self.choice += dx
-      self.choice = wrap(self.choice, 1, #player_choices)
-    end
+    repeat
+      self.choice = wrap(self.choice+dx, 1, #player_choices)
+      if (dx==0) dx = 1
+    until not chosen[player_choices[self.choice]]
 
     if btnp(🅾️, bp) or btnp(❎, bp) then
       self.state = 'chosen'
