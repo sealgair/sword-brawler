@@ -27,17 +27,11 @@ function player:init(p, x, y)
   self.score.tries += 1
 end
 
-function player:update()
-  mob.update(self)
-  if (self.sm.state == "dying") return
-  if not self.dodging then
-    self.dir = {x=0, y=0}
-    if (btn(btns.l, self.p)) self.dir.x -=1
-    if (btn(btns.r, self.p)) self.dir.x +=1
-    if (btn(btns.u, self.p)) self.dir.y -=1
-    if (btn(btns.d, self.p)) self.dir.y +=1
-  end
-  self:move()
+function player:think()
+  if (btn(btns.l, self.p)) self.dir.x -=1
+  if (btn(btns.r, self.p)) self.dir.x +=1
+  if (btn(btns.u, self.p)) self.dir.y -=1
+  if (btn(btns.d, self.p)) self.dir.y +=1
 
   if self.atkcool <= 0 then
     self.wasatk = self.isatk

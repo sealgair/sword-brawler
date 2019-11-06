@@ -18,11 +18,15 @@ function statemachine:gettransition(action)
 end
 
 function statemachine:dotransition(trans, ...)
+
   if (self.target.exit_state) self.target:exit_state(self.state, ...)
-  if (self.target["exit_"..self.state]) self.target["exit_"..self.state](self.target, self.state, ...)
+  if (self.target["exit_"..self.state]) self.target["exit_"..self.state](self.target, trans.to, ...)
+
+  local from = self.state
   self.state = trans.to
+
   if (self.target.enter_state) self.target:enter_state(self.state, ...)
-  if (self.target["enter_"..self.state]) self.target["enter_"..self.state](self.target, self.state, ...)
+  if (self.target["enter_"..self.state]) self.target["enter_"..self.state](self.target, from, ...)
   if trans.callback ~= nil and self.target[trans.callback] ~= nil then
     self.target[trans.callback](self.target, ...)
   end

@@ -32,6 +32,12 @@ function yesno(condition, yes, no)
   end
 end
 
+function find(val, list)
+  for k,v in pairs(list) do
+    if (val == v) return k
+  end
+end
+
 function sign(n)
   if (n == 0) return n
   return n/abs(n)

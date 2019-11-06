@@ -165,12 +165,22 @@ function mob:update()
     if (sprite.advance) sprite:advance(dt)
   end
 
+  if self.sm.state ~= "dying" then
+    if not self.dodging then
+      self.dir = {x=0, y=0}
+      self:think()
+    end
+    self:move()
+  end
+
   if self:ismoving() then
     self.sprites.walking:start(1/self.spd, true)
   else
     self.sprites.walking:stop()
   end
 end
+
+function mob:think() end
 
 function mob:die()
   del(mobs, self)
