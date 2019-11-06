@@ -1,11 +1,11 @@
 -- villains
 
 villain_palettes = {
-  {}, -- red
-  -- {[8]=10, [9]=7, [4]=9, [10]=8}, -- yellow?
-  {[8]=3, [9]=11, [4]=1, [10]=12}, -- green
-  {[8]=4, [9]=15, [4]=5, [10]=8}, -- brown
-  {[8]=6, [9]=7, [4]=5, [10]=2, [14]=13}, -- white
+  red={},
+  yellow={[8]=10, [9]=7, [4]=9, [10]=8},
+  green={[8]=3, [9]=11, [4]=1, [10]=12},
+  brown={[8]=4, [9]=15, [4]=5, [10]=8},
+  white={[8]=6, [9]=7, [4]=5, [10]=2, [14]=13},
 }
 
 villain = mob.subclass{
@@ -19,15 +19,25 @@ villain = mob.subclass{
   skipoutline={7},
   withsprites=weaponsprites(range(136,142)),
   withskipoutline={12,14,15},
+  vpalette=villain_palettes.yellow,
 
   atkcooldown={0.5,2},
+  attackrate=0.3,
 }
+
+function villain:init(x, y)
+  mob.init(self, x, y, self.vpalette)
+end
+
+-- function villain:draw(...)
+--   -- debug
+--   color(7)
+--   print(self.sm.state, self.x, self.y-7)
+--   mob.draw(self, ...)
+-- end
 
 function villain:enter_defend(from)
   self.defcool = self.defcooldown
-  if find(from, {'striking', 'attacking', 'overextended'}) then
-    self.dodgein = rnd(0.1)
-  end
 end
 
 function villain:unwind()
@@ -77,7 +87,7 @@ function villain:think()
       end
       if self.atkcool <= 0 then
         self.flipped = dx<0
-        if rnd(3) > 1  then
+        if rnd() < self.attackrate  then
           self.sm:transition("attack")
           self.attacked = true
         end
@@ -89,9 +99,32 @@ function villain:think()
   end
 end
 
--- function villain:draw(...)
---   -- debug
---   color(7)
---   print(self.sm.state, self.x, self.y-7)
---   mob.draw(self, ...)
--- end
+-- red villain: aggressive: attacks fast, then dodges away
+redvillain = villain.subclass{
+  vpalette=villain_palettes.red,
+  attackrate=0.9,
+  atkcooldown={0.25,1},
+}
+
+function redvillain:enter_defend(from)
+  villain.enter_defend(self, from)
+  if find(from, {'striking', 'attacking', 'overextended'}) then
+    self.dodgein = rnd(0.1)
+  end
+end
+
+-- green villain: backstabber: only approaches when your back is turned
+greenvillain = villain.subclass{
+  vpalette=villain_palettes.green,
+}
+
+-- brown villain: coward: only approaches when ther are allies around
+brownvillain = villain.subclass{
+  vpalette=villain_palettes.brown,
+}
+
+-- white villain: cunning: tries to parry
+whitevillain = villain.subclass{
+  vpalette=villain_palettes.white,
+  attackrate=0.1,
+}

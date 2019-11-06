@@ -87,7 +87,8 @@ function toggle_friendlyfire(skiptoggle)
     friendlyfire = not friendlyfire
     dset(savekeys.friendlyfire, yesno(friendlyfire, 1, 0))
   end
-  menuitem(1, "dmg allies [" .. yesno(friendlyfire, "on", "off") .. "]", toggle_friendlyfire)
+  menuitem(1, "hurt allies [" .. yesno(friendlyfire, "x", " ") .. "]", toggle_friendlyfire)
+  if (not skiptoggle) extcmd("pause") -- re-open menu so user can see what changed
 end
 
 function _init()
@@ -105,7 +106,8 @@ function _update60()
   dtime = fwrap(dtime+dt, 0, day)
   vtime -= dt*count(players)
   if vtime <= 0 then
-    villain(flr(rnd(2))*139-10, rnd(64)+64, rndchoice(villain_palettes))
+    vtype = rndchoice({redvillain, greenvillain, brownvillain, whitevillain})
+    vtype(flr(rnd(2))*139-10, rnd(64)+64)
     vtime = villain_rate[1] + rnd(villain_rate[2])
   end
 end
