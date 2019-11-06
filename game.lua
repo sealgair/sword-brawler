@@ -98,17 +98,21 @@ end
 
 villain_rate = {2,3}
 vtime = 0.1
+max_villains=3
 function _update60()
   hud:update()
   for m in all(mobs) do
     m:update()
   end
   dtime = fwrap(dtime+dt, 0, day)
-  vtime -= dt*count(players)
-  if vtime <= 0 then
-    vtype = rndchoice({redvillain, greenvillain, brownvillain, whitevillain})
-    vtype(flr(rnd(2))*139-10, rnd(64)+64)
-    vtime = villain_rate[1] + rnd(villain_rate[2])
+  if #mobs - count(players) < max_villains then
+    vtime -= dt*count(players)
+    if vtime <= 0 then
+      vtype = rndchoice{redvillain, greenvillain, brownvillain, whitevillain}
+      -- vtype = rndchoice{greenvillain}
+      vtype(flr(rnd(2))*139-10, rnd(64)+64)
+      vtime = villain_rate[1] + rnd(villain_rate[2])
+    end
   end
 end
 
