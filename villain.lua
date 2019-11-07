@@ -23,6 +23,7 @@ villain = mob.subclass{
 
   atkcooldown={0.5,2},
   attackrate=0.3,
+  reflexes=0.5,
 }
 
 function villain:init(x, y)
@@ -145,7 +146,23 @@ greenvillain = villain.subclass{
 }
 
 function greenvillain:targetlooking()
-  return self.target.flipped == (self.target.x > self.x)
+  return self.waslooking
+end
+
+function greenvillain:update()
+  if self.target then
+    local islooking = self.target.flipped == (self.target.x > self.x)
+    if (self.waslooking == nil) self.waslooking = islooking
+    if self.waslooking != islooking then
+      if (self.lookingcounter == nil) self.lookingcounter = self.reflexes + dt
+      self.lookingcounter -= dt
+      if (self.lookingcounter <= 0) self.waslooking = islooking
+    else
+      self.lookingcounter = nil
+    end
+  end
+
+  villain.update(self)
 end
 
 function greenvillain:movefor(dx, ...)
@@ -182,11 +199,9 @@ end
 
 function greenvillain:move()
   villain.move(self)
-  if self.target then
-    if self:targetlooking() then
-      -- backpedal as enemy approachesss
-      self.flipped = not self.target.flipped
-    end
+  if self.target and self:targetlooking() then
+    -- backpedal as enemy approachesss
+    self.flipped = self.x > self.target.x
   end
 end
 

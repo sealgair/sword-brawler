@@ -98,7 +98,7 @@ end
 
 villain_rate = {2,3}
 vtime = 0.1
-max_villains=3
+max_villains=1
 function _update60()
   hud:update()
   for m in all(mobs) do
