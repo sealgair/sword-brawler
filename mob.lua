@@ -200,12 +200,12 @@ function mob:hitbox()
   return box
 end
 
-function mob:collides()
+function mob:collides(ff)
+  if (ff == nil) ff = friendlyfire
   local hits = {}
   for mob in all(mobs) do
-    if mob ~= self and (friendlyfire or mob.team == nil or mob.team ~= self.team) then
+    if mob ~= self and (ff or mob.team == nil or mob.team ~= self.team) then
       -- check boxes for overlap
-      local shb, ohb = self:hitbox(), mob:hitbox()
       if intersects(self:hitbox(), mob:hitbox()) then
         add(hits, mob)
       end
