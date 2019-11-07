@@ -85,8 +85,21 @@ mobstatemachine = timedstatemachine.subclass({
     },
     staggered={
       timeout={to="defend"},
-      hit={to="defend"},
-      heavyhit={to="stunned"},
+      dodge={to="dodging"},
+      hit={to="stunned"},
+      heavyhit={to="dying"},
+      backstab={to="dying"},
+    },
+    stunned={
+      timeout={to="defend"},
+      hit={to="dying"},
+      heavyhit={to="dying"},
+      backstab={to="dying"},
+    },
+    overextended={
+      timeout={to="defend"},
+      hit={to="dying"},
+      heavyhit={to="dying"},
       backstab={to="dying"},
     },
     winding={
@@ -136,31 +149,19 @@ mobstatemachine = timedstatemachine.subclass({
       parried={to="stunned"},
       defended={to="staggered"},
     },
-    overextended={
-      timeout={to="defend"},
-      hit={to="dying"},
-      heavyhit={to="dying"},
-      backstab={to="dying"},
-    },
-    stunned={
-      timeout={to="defend"},
-      hit={to="dying"},
-      heavyhit={to="dying"},
-      backstab={to="dying"},
-    },
     dying={
       timeout={to="dead", callback="die"},
     }
   },
   timeouts={
     spawned=0.8,
-    winding=0.4,
+    winding=0.3,
     dodging=0.15,
-    recover=0.4,
+    recover=0.2,
     parrying=0.3,
     attacking=0.2,
     smashing=0.3,
-    staggered=0.25,
+    staggered=1,
     overextended=0.75,
     stunned=0.8,
     dying=1.2,

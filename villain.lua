@@ -23,7 +23,7 @@ villain = mob.subclass{
 
   atkcooldown={0.5,2},
   attackrate=0.3,
-  reflexes=0.5,
+  reflexes=0.3,
 }
 
 function villain:init(x, y)
@@ -184,7 +184,7 @@ function backstab_villain:movefor(dx, ...)
       mx = 1
     elseif dx < r+2 then
       mx = -1
-      if dx <= 0 then
+      if dx <= 0 and self.defcool <= 0 then
         self.sm:transition("dodge")
       end
     end

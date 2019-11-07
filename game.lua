@@ -96,7 +96,7 @@ function _init()
   toggle_friendlyfire(true)
 end
 
-villain_rate = {1,3}
+villain_rate = {3,5}
 vtime = 0.1
 max_villains=5
 function _update60()
@@ -108,8 +108,8 @@ function _update60()
   if #mobs - count(players) < max_villains then
     vtime -= dt*count(players)
     if vtime <= 0 then
-      -- vtype = rndchoice{aggro_villain, backstab_villain, coward_villain, parry_villain}
-      vtype = coward_villain
+      vtype = rndchoice{aggro_villain, backstab_villain, coward_villain, parry_villain}
+      -- vtype = backstab_villain
       vtype(flr(rnd(2))*139-10, rnd(64)+64)
       vtime = villain_rate[1] + rnd(villain_rate[2])
     end

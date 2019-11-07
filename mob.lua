@@ -279,7 +279,7 @@ function mob:hit(atk, other)
     * 4 defender killed
   ]]
   local tr = 'hit'
-  if self.flipped == other.flipped then
+  if self.flipped == other.flipped or atk > self.def+2 then
     tr = 'backstab'
   elseif atk > self.def then
     tr = 'heavyhit'
