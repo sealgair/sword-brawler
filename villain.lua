@@ -49,12 +49,8 @@ function villain:unwind()
   end
 end
 
-function villain:getberth()
-  return self.rng
-end
-
-function villain:getescape()
-  return 0
+function villain:targetlooking()
+  return self.target.flipped == (self.target.x > self.x)
 end
 
 function villain:movefor(xdist, ydist, xdiff, ydiff)
@@ -64,7 +60,7 @@ function villain:movefor(xdist, ydist, xdiff, ydiff)
   return mx, my
 end
 
-function villain:reactto(inrange, target)
+function villain:reactto(inrange, xdiff, ydiff)
   if inrange then
     if self.atkcool <= 0 then
       if rnd() < self.attackrate  then
@@ -155,13 +151,9 @@ backstab_villain = villain.subclass{
   attackrate=1,
 }
 
-function backstab_villain:targetlooking()
-  return self.waslooking
-end
-
 function backstab_villain:update()
   if self.target then
-    local islooking = self.target.flipped == (self.target.x > self.x)
+    local islooking = self:targetlooking()
     if (self.waslooking == nil) self.waslooking = islooking
     if self.waslooking != islooking then
       if (self.lookingcounter == nil) self.lookingcounter = self.reflexes + dt
@@ -177,7 +169,7 @@ end
 
 function backstab_villain:movefor(dx, ...)
   local mx, my = villain.movefor(self, dx, ...)
-  if self:targetlooking() then
+  if self.waslooking then
     mx = 0
     local r = max(self.rng, self.target.rng)
     if dx > r+4 then
@@ -193,7 +185,7 @@ function backstab_villain:movefor(dx, ...)
 end
 
 function backstab_villain:reactto(inrange, ...)
-  if not self:targetlooking() then
+  if not self.waslooking then
     villain.reactto(self, true, ...)
     if inrange then
       self.sm:transition("release")
@@ -209,7 +201,7 @@ end
 
 function backstab_villain:move()
   villain.move(self)
-  if self.target and self:targetlooking() then
+  if self.target and self.waslooking then
     -- backpedal as enemy approachesss
     self.flipped = self.x > self.target.x
   end
@@ -220,19 +212,51 @@ coward_villain = villain.subclass{
   vpalette=villain_palettes.brown,
 }
 
-function coward_villain:movefor(...)
+function coward_villain:movefor(xdist, ...)
+  local mx, my = villain.movefor(self, xdist, ...)
   local tdist = cabdist(self, self.target)
   for mob in all(mobs) do
     if mob ~= self and mob.target == self.target and cabdist(self, mob) < tdist*1.5 then
       -- has a friend
-      return villain.movefor(self, ...)
+      return mx, my
     end
   end
+  if (xdist <= self.rng+2) return mx, my -- turn and fight if cornered
   return -1, 0 -- alone and scared
 end
 
 -- white villain: cunning: tries to parry
 parry_villain = villain.subclass{
   vpalette=villain_palettes.white,
-  attackrate=0.1,
+  attackrate=1,
 }
+
+function parry_villain:update()
+  if self.moodcounter then
+    self.moodcounter -= dt
+    if (self.moodcounter <= 0) self.mood = nil
+  end
+  if not self.mood then
+    self.mood = rndchoice{'approach', 'wait'}
+    self.moodcounter = 2+rnd(4)
+  end
+  villain.update(self)
+end
+
+function parry_villain:movefor(...)
+  if (self.mood == 'approach') return villain.movefor(self, ...)
+  return 0, 0
+end
+
+function parry_villain:reactto(inrange, ...)
+  local pstates = {attacking=true, smashing=true}
+  local astates = {overextended=true, stunned=true, staggered=true}
+  local tstate = self.target.sm.state
+  if inrange then
+    if pstates[tstate] then
+      self.sm:transition("parry")
+    elseif not self:targetlooking() or astates[tstate] then
+      villain.reactto(self, inrange, ...)
+    end
+  end
+end

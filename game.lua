@@ -108,8 +108,8 @@ function _update60()
   if #mobs - count(players) < max_villains then
     vtime -= dt*count(players)
     if vtime <= 0 then
-      vtype = rndchoice{aggro_villain, backstab_villain, coward_villain, parry_villain}
-      -- vtype = backstab_villain
+      -- vtype = rndchoice{aggro_villain, backstab_villain, coward_villain, parry_villain}
+      vtype = parry_villain
       vtype(flr(rnd(2))*139-10, rnd(64)+64)
       vtime = villain_rate[1] + rnd(villain_rate[2])
     end
