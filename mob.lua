@@ -191,8 +191,8 @@ function mob:hitbox()
     x=self.x, y=self.y,
     w=self.w, h=self.h
   }
-  local sts = {attacking=true, smashing=true, striking=true, parrying=true}
-  if sts[self.sm.state] then
+  local atkstates = {attacking=true, smashing=true, striking=true, parrying=true}
+  if atkstates[self.sm.state] then
     box.w += self.rng - self.w/2
     box.x += self.w/2
     if (self.flipped) box.x -= self.rng + self.w/2
@@ -205,6 +205,7 @@ function mob:collides()
   for mob in all(mobs) do
     if mob ~= self and (friendlyfire or mob.team == nil or mob.team ~= self.team) then
       -- check boxes for overlap
+      local shb, ohb = self:hitbox(), mob:hitbox()
       if intersects(self:hitbox(), mob:hitbox()) then
         add(hits, mob)
       end
@@ -242,22 +243,26 @@ function mob:parried(atk, other)
   end
 end
 
-function mob:strike(heavy)
+function mob:connectattack(heavy)
   local hits = self:collides()
   local str = self.str
   if (heavy) str *= 1.5
   for hit in all(hits) do
     hit:hit(str, self)
   end
-  if #hits > 0 then
-    self.sm:transition("strike")
-  else
+  if heavy and #hits <= 0 then
     self.sm:transition("miss")
+  else
+    self.sm:transition("strike")
   end
 end
 
+function mob:strike()
+  self:connectattack(false)
+end
+
 function mob:smash()
-  self:strike(true)
+  self:connectattack(true)
 end
 
 function mob:addscore() end

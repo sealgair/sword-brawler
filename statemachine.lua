@@ -116,7 +116,7 @@ mobstatemachine = timedstatemachine.subclass({
       backstab={to="dying"},
     },
     attacking={
-      timeout={to="defend", callback="strike"},
+      timeout={to="striking", callback="strike"},
       hit={to="dying"},
       heavyhit={to="dying"},
       backstab={to="dying"},

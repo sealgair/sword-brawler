@@ -48,16 +48,30 @@ function villain:unwind()
   end
 end
 
-function villain:exit_winding()
-  self.sm:transition("release")
-end
-
 function villain:getberth()
   return self.rng
 end
 
 function villain:getescape()
   return 0
+end
+
+function villain:movefor(xdist, ydist, xdiff, ydiff)
+  local mx, my = 0, 0
+  if (abs(ydiff) > 2) my = 1
+  if (xdist >= self.rng) mx = 1
+  return mx, my
+end
+
+function villain:reactto(inrange, target)
+  if inrange then
+    if self.atkcool <= 0 then
+      if rnd() < self.attackrate  then
+        self.sm:transition("attack")
+      end
+      self.atkcool = self.atkcooldown[1] + rnd(self.atkcooldown[2])
+    end
+  end
 end
 
 function villain:think()
@@ -77,44 +91,18 @@ function villain:think()
   self.defcool = max(0, self.defcool-dt)
 
   if self.target then
-    local dx = self.target.x - self.x
-    local ddx = max(abs(dx) - self.w, 0)
-    local dy = self.target.y - self.y
-    local ddy = max(abs(dy) - self.h, 0)
+    local xdiff = self.target.x - self.x
+    local xdist = max(abs(xdiff) - self.w+1, 0)
+    local ydiff = self.target.y - self.y
+    local ydist = max(abs(ydiff) - self.h+1, 0)
 
-    -- TODO: overridable functions that get new dir from distance of target
-
-    if (abs(dy) > 2) self.dir.y = sign(dy)
     -- TODO: try not to overlap other enemies
+    local mx, my = self:movefor(xdist, ydist, xdiff, ydiff)
+    self.dir.x = mx * sign(xdiff)
+    self.dir.y = my * sign(ydiff)
 
-    if ddx > self:getberth(ddx, ddy) and abs(dx) > 2 then
-      -- should move closer
-      self.dir.x = sign(dx)
-    elseif ddx < self:getescape(ddx, ddy) then
-      -- should move furtherr
-      self.dir.x = -sign(dx)
-    else
-      self.flipped = dx<0
-
-      if self.dodgein then
-        self.dodgein -= dt
-        if self.dodgein <= 0 then
-          self.dodgein = nil
-          self.dir.x = -sign(dx)
-          self.sm:transition("dodge")
-        end
-      end
-
-      if abs(ddx) <= self.rng and abs(ddy)<=0 then
-        -- in striking range
-        if self.atkcool <= 0 then
-          if rnd() < self.attackrate  then
-            self.sm:transition("attack")
-          end
-          self.atkcool = self.atkcooldown[1] + rnd(self.atkcooldown[2])
-        end
-      end
-    end
+    local inrange = (xdist < self.rng and ydist <= 0)
+    self:reactto(inrange, xdiff, ydiff)
   end
 end
 
@@ -132,8 +120,22 @@ function redvillain:enter_defend(from)
   end
 end
 
-function redvillain:getberth()
-  return self.rng-1
+function redvillain:reactto(...)
+  villain.reactto(self, ...)
+  if self.dodgein then
+    self.dodgein -= dt
+    if self.dodgein <= 0 then
+      self.dodgein = nil
+      self.sm:transition("dodge")
+    end
+  end
+end
+
+function redvillain:move()
+  if self.target and self.dodging then
+    self.dir.x = sign(self.x - self.target.x)
+  end
+  villain.move(self)
 end
 
 -- green villain: backstabber: only approaches when your back is turned
@@ -146,28 +148,41 @@ function greenvillain:targetlooking()
   return self.target.flipped == (self.target.x > self.x)
 end
 
-function greenvillain:getberth(dx, dy)
+function greenvillain:movefor(dx, ...)
+  local mx, my = villain.movefor(self, dx, ...)
   if self:targetlooking() then
-    return max(self.rng, self.target.rng) + 4
+    mx = 0
+    local r = max(self.rng, self.target.rng)
+    if dx > r+4 then
+      mx = 1
+    elseif dx < r+2 then
+      mx = -1
+      if dx <= 0 then
+        self.sm:transition("dodge")
+      end
+    end
+  end
+  return mx, my
+end
+
+function greenvillain:reactto(inrange, ...)
+  if not self:targetlooking() then
+    villain.reactto(self, true, ...)
+    if inrange then
+      self.sm:transition("release")
+    end
   else
-    return self.rng
+    self.sm:transition("cancel")
   end
 end
 
-function greenvillain:getescape(dx, dy)
-  if self:targetlooking() then
-    return max(self.rng, self.target.rng) + 2
-    -- TODO: should dodge away if extra close
-  else
-    return 0
-  end
+function greenvillain:unwind()
+  -- skip villain (don't auto-release)
 end
 
 function greenvillain:move()
   villain.move(self)
   if self.target then
-    local dx = self.target.x - self.x
-    local ddx = max(abs(dx) - self.w, 0)
     if self:targetlooking() then
       -- backpedal as enemy approachesss
       self.flipped = not self.target.flipped
