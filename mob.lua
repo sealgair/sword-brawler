@@ -47,7 +47,7 @@ mob = class({
 
   str=2,
   spd=2,
-  def=2,
+  def=3,
   rng=2,
 })
 

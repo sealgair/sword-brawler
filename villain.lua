@@ -237,25 +237,44 @@ function parry_villain:update()
     if (self.moodcounter <= 0) self.mood = nil
   end
   if not self.mood then
-    self.mood = rndchoice{'approach', 'wait'}
+    self.mood = rndchoice{'approach', 'wait', 'aggro'}
     self.moodcounter = 2+rnd(4)
   end
   villain.update(self)
 end
 
 function parry_villain:movefor(...)
-  if (self.mood == 'approach') return villain.movefor(self, ...)
+  if (self.mood ~= 'wait') return villain.movefor(self, ...)
   return 0, 0
 end
 
 function parry_villain:reactto(inrange, ...)
+  local rstates = {attacking=true, smashing=true, winding=true, holding=true}
   local pstates = {attacking=true, smashing=true}
   local astates = {overextended=true, stunned=true, staggered=true}
   local tstate = self.target.sm.state
   if inrange then
-    if pstates[tstate] then
-      self.sm:transition("parry")
-    elseif not self:targetlooking() or astates[tstate] then
+    local attacked = false
+    if self.mood == 'aggro' then
+      villain.reactto(self, inrange, ...)
+      self.moodcounter = 0
+      attacked = true
+    end
+
+    if rstates[tstate] then
+      if self.react == nil then
+        self.react = rnd(self.reflexes)
+      else
+        self.react -= dt
+        if self.react <= 0 and pstates[tstate] then
+          self.react = nil
+          self.sm:transition("parry")
+        end
+      end
+    else
+      self.react = nil
+    end
+    if not attacked and not self:targetlooking() or astates[tstate] then
       villain.reactto(self, inrange, ...)
     end
   end
