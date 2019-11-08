@@ -8,7 +8,6 @@ function make_giant(head)
       dodging=180,
       dying=dyinganim(181),
     },
-    skipoutline={7},
     head=head,
     str=3,
     spd=1,
@@ -25,7 +24,6 @@ villain_bodies = {
       dodging=131,
       dying=dyinganim(132),
     },
-    skipoutline={7},
     str=2,
     spd=2,
     def=2,
@@ -38,7 +36,6 @@ villain_bodies = {
       dodging={147,148},
       dying=dyinganim(149),
     },
-    skipoutline={7},
     str=1,
     spd=3,
     def=1,
@@ -50,17 +47,22 @@ for h in all(range(160,164)) do
 end
 
 villain_weapons = {
-  {
+  { -- dagger
     withsprites=weaponsprites(range(136,142)),
-    withskipoutline={12,14,15},
-    spd=1,
-    rng=4
+    spd=2,
+    rng=4,
   },
-  {
+  { -- club
     withsprites=weaponsprites(range(152,158)),
-    withskipoutline={12,14,15},
     str=2,
+    spd=1,
     rng=6,
+  },
+  { -- spiney sword
+    withsprites=weaponsprites(range(168,174)),
+    str=3,
+    def=-1,
+    rng=8,
   },
 }
 
@@ -75,7 +77,8 @@ villain_palettes = {
 villain = mob.subclass{
   team="villains",
   vpalette=villain_palettes.yellow,
-
+  skipoutline={7},
+  withskipoutline={12,14,15},
   atkcooldown={0.5,2},
   attackrate=0.3,
   reflexes=0.3,
