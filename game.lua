@@ -99,6 +99,7 @@ end
 villain_rate = {3,5}
 vtime = 0.1
 max_villains=5
+villains = {coward_villain, aggro_villain, backstab_villain, parry_villain}
 function _update60()
   hud:update()
   for m in all(mobs) do
@@ -108,8 +109,8 @@ function _update60()
   if #mobs - count(players) < max_villains then
     vtime -= dt*count(players)
     if vtime <= 0 then
-      local vtype = rndchoice{aggro_villain, backstab_villain, coward_villain, parry_villain}
-      local body = rndchoice(villain_bodies)
+      local vtype = rndchoice(villains, rnd()*rnd())
+      local body = rndchoice(villain_bodies, rnd()*rnd())
       local weapon = rndchoice(villain_weapons)
       vtype(flr(rnd(2))*139-10, rnd(64)+64, body, weapon)
       vtime = villain_rate[1] + rnd(villain_rate[2])

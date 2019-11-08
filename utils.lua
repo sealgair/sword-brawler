@@ -132,8 +132,9 @@ function update(t1, t2)
   end
 end
 
-function rndchoice(t)
-  return t[ceil(rnd(#t))]
+function rndchoice(t, r)
+  if (r == nil) r = rnd()
+  return t[ceil(r*#t)]
 end
 
 function sscoord(s)
