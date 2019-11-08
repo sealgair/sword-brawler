@@ -70,11 +70,13 @@ function mob:init(x, y, pswap)
     end
   end
 
-  self.sprites = map(self.sprites, makeoutline{
+  local makebody = makeoutline{
     o=self.outline,
     pswap=pswap,
     so=self.skipoutline,
-  })
+  }
+  if (self.head) self.head = makebody(self.head)
+  self.sprites = map(self.sprites, makebody)
   self.withsprites = map(self.withsprites, makeoutline{
     o=self.outline,
     so=self.withskipoutline,
@@ -118,12 +120,18 @@ function mob:exit_state(state)
 end
 
 function mob:draw()
+  if self.head and self.head.o and self.sm.state ~= "dying" then
+    self.head:outline(self.x, self.y-8, self.flipped)
+  end
   local sprite = self:getsprite()
   local withsprite = self:getwithsprite()
   if withsprite ~= nil and sprite.join then
     sprite:drawwith(withsprite, self.x, self.y, self.flipped)
   else
     sprite:draw(self.x, self.y, self.flipped)
+  end
+  if self.head and self.sm.state ~= "dying" then
+    self.head:draw_inline(self.x, self.y-8, self.flipped)
   end
   -- debug
   -- local hb = self:hitbox()

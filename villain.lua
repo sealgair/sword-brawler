@@ -1,7 +1,24 @@
 -- villains
 
+function make_giant(head)
+  return {
+    sprites={
+      standing=176,
+      walking=range(176,179),
+      dodging=180,
+      dying=dyinganim(181),
+    },
+    skipoutline={7},
+    head=head,
+    str=3,
+    spd=1,
+    def=3,
+    rng=0,
+  }
+end
+
 villain_bodies = {
-  snake={
+  { -- snake
     sprites={
       standing=128,
       walking=range(128,130),
@@ -10,11 +27,11 @@ villain_bodies = {
     },
     skipoutline={7},
     str=2,
-    spd=1,
+    spd=2,
     def=2,
     rng=-1,
   },
-  gremlin={
+  { -- gremlin
     sprites={
       standing=144,
       walking=range(144,146),
@@ -28,15 +45,18 @@ villain_bodies = {
     rng=-2,
   },
 }
+for h in all(range(160,164)) do
+  add(villain_bodies, make_giant(h))
+end
 
 villain_weapons = {
-  dagger={
+  {
     withsprites=weaponsprites(range(136,142)),
     withskipoutline={12,14,15},
     spd=1,
     rng=4
   },
-  club={
+  {
     withsprites=weaponsprites(range(152,158)),
     withskipoutline={12,14,15},
     str=2,

@@ -59,17 +59,21 @@ function sprite:draw(x, y, flipx, flipy)
   pal()
 end
 
+function sprite:draw_inline(...)
+  local oldo = self.o
+  self.o = false
+  self:draw(...)
+  self.o = oldo
+end
+
 function sprite:outline(x, y, flipx, flipy)
   local oldpswap = self.pswap
-  local oldo = self.o
   self.pswap = self.oswap
-  self.o = false
   forbox(-1,-1,2,2, function(dx,dy)
     if dx == 0 or dy == 0 then
-      self:draw(x+dx, y+dy, flipx, flipy)
+      self:draw_inline(x+dx, y+dy, flipx, flipy)
     end
   end)
-  self.o = oldo
   self.pswap = oldpswap
 end
 
