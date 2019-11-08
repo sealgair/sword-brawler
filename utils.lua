@@ -104,6 +104,14 @@ function map(l, fn)
   return kmap(l, function(k,v) return k, fn(v) end)
 end
 
+function values(t)
+  local r = {}
+  for k,v in pairs(t) do
+    add(r, v)
+  end
+  return r
+end
+
 function invert(t)
   return kmap(t, function(k,v) return v,k end)
 end
@@ -116,6 +124,12 @@ function append(...)
     end
   end
   return r
+end
+
+function update(t1, t2)
+  for k, v in pairs(t2) do
+    t1[k] = v
+  end
 end
 
 function rndchoice(t)

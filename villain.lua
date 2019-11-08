@@ -1,5 +1,49 @@
 -- villains
 
+villain_bodies = {
+  snake={
+    sprites={
+      standing=128,
+      walking=range(128,130),
+      dodging=131,
+      dying=dyinganim(132),
+    },
+    skipoutline={7},
+    str=2,
+    spd=1,
+    def=2,
+    rng=-1,
+  },
+  gremlin={
+    sprites={
+      standing=144,
+      walking=range(144,146),
+      dodging={147,148},
+      dying=dyinganim(149),
+    },
+    skipoutline={7},
+    str=1,
+    spd=3,
+    def=1,
+    rng=-2,
+  },
+}
+
+villain_weapons = {
+  dagger={
+    withsprites=weaponsprites(range(136,142)),
+    withskipoutline={12,14,15},
+    spd=1,
+    rng=4
+  },
+  club={
+    withsprites=weaponsprites(range(152,158)),
+    withskipoutline={12,14,15},
+    str=2,
+    rng=6,
+  },
+}
+
 villain_palettes = {
   red={},
   yellow={[8]=10, [9]=7, [4]=9, [10]=8},
@@ -10,15 +54,6 @@ villain_palettes = {
 
 villain = mob.subclass{
   team="villains",
-  sprites={
-    standing=128,
-    walking=range(128,130),
-    dodging=131,
-    dying=dyinganim(132),
-  },
-  skipoutline={7},
-  withsprites=weaponsprites(range(136,142)),
-  withskipoutline={12,14,15},
   vpalette=villain_palettes.yellow,
 
   atkcooldown={0.5,2},
@@ -26,7 +61,16 @@ villain = mob.subclass{
   reflexes=0.3,
 }
 
-function villain:init(x, y)
+function villain:init(x, y, body, weapon)
+  local stats = {'str', 'spd', 'def', 'rng'}
+  if (body) update(self, body)
+  if weapon then
+    for stat in all(stats) do
+      self[stat] += (weapon[stat] or 0)
+      weapon[stat] = nil
+    end
+    update(self, weapon)
+  end
   mob.init(self, x, y, self.vpalette)
 end
 

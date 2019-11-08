@@ -108,8 +108,10 @@ function _update60()
   if #mobs - count(players) < max_villains then
     vtime -= dt*count(players)
     if vtime <= 0 then
-      vtype = rndchoice{aggro_villain, backstab_villain, coward_villain, parry_villain}
-      vtype(flr(rnd(2))*139-10, rnd(64)+64)
+      local vtype = rndchoice{aggro_villain, backstab_villain, coward_villain, parry_villain}
+      local body = rndchoice(values(villain_bodies))
+      local weapon = rndchoice(values(villain_weapons))
+      vtype(flr(rnd(2))*139-10, rnd(64)+64, body, weapon)
       vtime = villain_rate[1] + rnd(villain_rate[2])
       if vtype == coward_villain and #mobs - count(players) <= 1 then
         -- make sure a friend comes soon
