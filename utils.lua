@@ -62,6 +62,7 @@ end
 
 function slice(t, s, e)
   local r = {}
+  if (e==nil) e = #t
   if (s<0) s+=#t+1
   if (e<0) e+=#t+1
   for i=s,e do
@@ -80,6 +81,54 @@ end
 
 function cabdist(a, b)
   return abs(a.x-b.x) + abs(a.y-b.y)
+end
+
+function tokenize(s)
+  local tokens = {}
+  local whitespace = {
+    [" "]=true,
+    ["\n"]=true,
+    ["\t"]=true,
+  }
+  local token = ""
+  for i = 1,#s do
+    c = sub(s, i,i)
+    if whitespace[c] then
+      if (token != "") add(tokens, token)
+      token = ""
+    else
+      token = token .. c
+    end
+  end
+  if (token ~= "") add(tokens, token)
+  return tokens
+end
+
+function analyze(tokens, i)
+  if (i == nil) i = 0
+  local r = {}
+  local k, v
+
+  while i < #tokens do
+    i += 1
+    local token = tokens[i]
+    if sub(token, #token, #token) == "=" then
+      k = sub(token, 1, #token-1)
+    elseif token == "{" then
+      v, i = analyze(tokens, i)
+      r[k] = v
+    elseif token == "}" then
+      return r, i
+    else
+      r[k] = tonum(token) or token
+    end
+  end
+  return r, i
+end
+
+function parse_pion(mapstr)
+  local r, _ = analyze(tokenize(mapstr))
+  return r
 end
 
 function between(v, a, b)

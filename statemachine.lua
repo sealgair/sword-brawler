@@ -69,90 +69,90 @@ end
 
 mobstatemachine = timedstatemachine.subclass({
   state="spawned",
-  transitions={
-    spawned={
-      timeout={to="defend"},
-    },
-    defend={
-      attack={to="winding"},
-      hit={to="staggered"},
-      heavyhit={to="stunned"},
-      backstab={to="dying"},
-      parry={to="parrying"},
-      dodge={to="dodging"},
-      parried={to="stunned"},
-      defended={to="staggered"},
-    },
-    staggered={
-      timeout={to="defend"},
-      dodge={to="dodging"},
-      hit={to="stunned"},
-      heavyhit={to="dying"},
-      backstab={to="dying"},
-    },
-    stunned={
-      timeout={to="defend"},
-      hit={to="dying"},
-      heavyhit={to="dying"},
-      backstab={to="dying"},
-    },
-    overextended={
-      timeout={to="defend"},
-      hit={to="dying"},
-      heavyhit={to="dying"},
-      backstab={to="dying"},
-    },
-    winding={
-      timeout={to="holding", callback="unwind"},
-      hit={to="dying"},
-      heavyhit={to="dying"},
-      backstab={to="dying"},
-    },
-    holding={
-      release={to="attacking"},
-      smash={to="smashing"},
-      cancel={to="defend"},
-      hit={to="dying"},
-      heavyhit={to="dying"},
-      backstab={to="dying"},
-    },
-    dodging={
-      timeout={to="recover"},
-    },
-    recover={
-      timeout={to="defend"},
-    },
-    parrying={
-      timeout={to="defend"},
-      hit={to="defend", callback="parry"},
-      heavyhit={to="defend", callback="parry"},
-      backstab={to="dying"},
-    },
-    attacking={
-      timeout={to="striking", callback="strike"},
-      hit={to="dying"},
-      heavyhit={to="dying"},
-      backstab={to="dying"},
-    },
-    smashing={
-      timeout={to="striking", callback="smash"},
-      hit={to="dying"},
-      heavyhit={to="dying"},
-      backstab={to="dying"},
-    },
-    striking={
-      miss={to="overextended"},
-      strike={to="defend"},
-      hit={to="dying"},
-      heavyhit={to="dying"},
-      backstab={to="dying"},
-      parried={to="stunned"},
-      defended={to="staggered"},
-    },
-    dying={
-      timeout={to="dead", callback="die"},
+  transitions=parse_pion([[
+    spawned= {
+      timeout= { to= defend }
     }
-  },
+    defend= {
+      attack= { to= winding }
+      hit= { to= staggered }
+      heavyhit= { to= stunned }
+      backstab= { to= dying }
+      parry= { to= parrying }
+      dodge= { to= dodging }
+      parried= { to= stunned }
+      defended= { to= staggered }
+    }
+    staggered= {
+      timeout= { to= defend }
+      dodge= { to= dodging }
+      hit= { to= stunned }
+      heavyhit= { to= dying }
+      backstab= { to= dying }
+    }
+    stunned= {
+      timeout= { to= defend }
+      hit= { to= dying }
+      heavyhit= { to= dying }
+      backstab= { to= dying }
+    }
+    overextended= {
+      timeout= { to= defend }
+      hit= { to= dying }
+      heavyhit= { to= dying }
+      backstab= { to= dying }
+    }
+    winding= {
+      timeout= { to= holding callback= unwind }
+      hit= { to= dying }
+      heavyhit= { to= dying }
+      backstab= { to= dying }
+    }
+    holding= {
+      release= { to= attacking }
+      smash= { to= smashing }
+      cancel= { to= defend }
+      hit= { to= dying }
+      heavyhit= { to= dying }
+      backstab= { to= dying }
+    }
+    dodging= {
+      timeout= { to= recover }
+    }
+    recover= {
+      timeout= { to= defend }
+    }
+    parrying= {
+      timeout= { to= defend }
+      hit= { to= defend callback= parry }
+      heavyhit= { to= defend callback= parry }
+      backstab= { to= dying }
+    }
+    attacking= {
+      timeout= { to= striking callback= strike }
+      hit= { to= dying }
+      heavyhit= { to= dying }
+      backstab= { to= dying }
+    }
+    smashing= {
+      timeout= { to= striking callback= smash }
+      hit= { to= dying }
+      heavyhit= { to= dying }
+      backstab= { to= dying }
+    }
+    striking= {
+      miss= { to= overextended }
+      strike= { to= defend }
+      hit= { to= dying }
+      heavyhit= { to= dying }
+      backstab= { to= dying }
+      parried= { to= stunned }
+      defended= { to= staggered }
+    }
+    dying= {
+      timeout= { to= dead callback= die }
+    }
+  ]]),
   timeouts={
     spawned=0.8,
     winding=0.3,
