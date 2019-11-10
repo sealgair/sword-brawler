@@ -124,7 +124,7 @@ end
 
 function _draw()
   draw_bg()
-  for m in all(mobs) do
+  for m in all(sort(mobs, function(a,b) return a.y>b.y end)) do
     -- todo: sort by y, then x
     m:draw()
   end

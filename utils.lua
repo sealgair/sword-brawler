@@ -224,6 +224,29 @@ function invert(t, initial)
  return r
 end
 
+function insert(t, v, i)
+  for j=#t,i,-1 do
+    t[j+1] = t[j]
+  end
+  t[i] = v
+end
+
+function sort(t, bigger)
+  local r = {}
+  for v in all(t) do
+    local ins = false
+    for i=1,#r do
+      if bigger(r[i], v) then
+        insert(r, v, i)
+        ins = true
+        break
+      end
+    end
+    if (not ins) add(r, v)
+  end
+  return r
+end
+
 function bmask(a,b)
  if band(a,b) == 0 then
  	return 0

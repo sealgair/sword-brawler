@@ -5,7 +5,7 @@ __lua__
 
 function printtable(t, indent)
 	if (indent == nil) indent = 0
-	
+
 	local s=""
 	for i=0,indent do
 		s=s.." "
@@ -21,7 +21,7 @@ function printtable(t, indent)
 	end
 end
 
-function _init()
+function testpion()
  local s = [[
  	a= b
  	b= cde
@@ -33,6 +33,22 @@ function _init()
  ]]
  printtable(parse_pion(s))
 end
+
+function testinsert()
+ local t={1,2,3,4,5}
+	insert(t, "foo", 3)
+	printtable(t)
+end
+
+function testsort()
+	local t = {1,9,5,2,7,4,56,2,2,0}
+	printtable(sort(t, function(a,b) return a > b end))
+end
+
+function _init()
+	testsort()
+end
+
 __gfx__
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
