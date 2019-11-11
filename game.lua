@@ -17,8 +17,6 @@ planets = {
     ground=13,
   },
 }
-pl = ceil(rnd(3))
-planet = planets[pl]
 
 stars = {}
 
@@ -30,47 +28,6 @@ function makestars(n)
       y=flr(16+rnd(48)),
       c=colors[ceil(rnd(#colors))]
     })
-  end
-end
-
-twilight_colors={13,14,2,1}
-function draw_sky()
-  -- 0 is noon, 0.5 is midnight
-  -- 0.25 is dusk, 0.75 is dawn
-  local t = (dtime/day)
-  local cn=#twilight_colors
-  local twl = twilight/day
-  local twl2 = twl/2
-  local sky=12 -- daytime
-
-  if abs(t-0.25) < twl2 then
-    --dusk
-    sky=twilight_colors[ceil( (t-0.25+twl2)/twl * #twilight_colors )]
-  elseif abs(t-0.75) < twl2 then
-    -- dawn
-    sky=twilight_colors[ceil( -(t-0.75-twl2)/twl * #twilight_colors )]
-  elseif between(t, 0.25, 0.75) then
-    -- night (TODO: light polution?)
-    sky = 0
-  end
-
-  rectfill(0,0,127,127,sky)
-
-  -- draw stars
-  if sky ~= 12 then
-    for s in all(stars) do
-      if darker(sky, s.c) and rnd()>0.02 then
-        pset(s.x, s.y, s.c)
-      end
-    end
-  end
-
-  -- draw planets
-  for i in all{-1, 1} do
-    local otherp = planets[wrap(pl+i, 3)]
-    local x, y = 60+(i*32), 20
-    otherp.globe:draw(x, y)
-  	shadow(x+4, y+4, 4, fwrap(t+((30/360)*i)), sky)
   end
 end
 
@@ -110,10 +67,6 @@ function gamesm:init()
   timedstatemachine.init(self, self)
 end
 
-function gamesm:enter_adventure()
-  mobs = {}
-end
-
 function gamesm:update_scores()
   for p=0,3 do
     if (btnp(🅾️, p) or btnp(❎, p)) self:transition("start")
@@ -142,8 +95,18 @@ function gamesm:update_demo()
   self:update_game()
 end
 
+
+function gamesm:enter_adventure()
+  mobs = {}
+  self.offset = 0
+  self.planet = planets[1]
+end
+
 function gamesm:update_adventure()
   self:update_game()
+  for p, player in pairs(players) do
+    self.offset = max(self.offset, player.x+32 - 128)
+  end
 end
 
 function gamesm:enter_survival()
@@ -152,6 +115,10 @@ function gamesm:enter_survival()
   self.vtime = 0.1
   self.max_villains=5
   self.planet = rndchoice(planets)
+end
+
+function gamesm:enter_demo()
+  self:enter_survival()
 end
 
 function gamesm:update_survival()
@@ -172,6 +139,50 @@ function gamesm:update_survival()
   end
 end
 
+twilight_colors={13,14,2,1}
+function gamesm:draw_sky()
+  -- 0 is noon, 0.5 is midnight
+  -- 0.25 is dusk, 0.75 is dawn
+  local t = (dtime/day)
+  local cn=#twilight_colors
+  local twl = twilight/day
+  local twl2 = twl/2
+  local sky=12 -- daytime
+
+  if abs(t-0.25) < twl2 then
+    --dusk
+    sky=twilight_colors[ceil( (t-0.25+twl2)/twl * #twilight_colors )]
+  elseif abs(t-0.75) < twl2 then
+    -- dawn
+    sky=twilight_colors[ceil( -(t-0.75-twl2)/twl * #twilight_colors )]
+  elseif between(t, 0.25, 0.75) then
+    -- night (TODO: light polution?)
+    sky = 0
+  end
+
+  rectfill(0,0,127,127,sky)
+
+  -- draw stars
+  if sky ~= 12 then
+    for s in all(stars) do
+      if darker(sky, s.c) and rnd()>0.02 then
+        pset(s.x, s.y, s.c)
+      end
+    end
+  end
+
+  if self.planet then
+    -- draw planets
+    local pl = find(self.planet, planets)
+    for i=-1,1,2 do
+      local otherp = planets[wrap(pl+i, 3)]
+      local x, y = 60+(i*32), 20
+      otherp.globe:draw(x, y)
+    	shadow(x+4, y+4, 4, fwrap(t+((30/360)*i)), sky)
+    end
+  end
+end
+
 function gamesm:draw_scores()
   rectfill(0,0, 127,127, 0)
   color(8)
@@ -180,15 +191,25 @@ function gamesm:draw_scores()
 end
 
 function gamesm:draw_survival()
-  draw_sky()
-  rectfill(0,64,128,128, planet.ground)
+  self:draw_sky()
+  rectfill(0,64,128,128, self.planet.ground)
   for m in all(sort(mobs, function(a,b) return a.y>b.y end)) do
-    -- todo: sort by y, then x
     m:draw()
   end
   hud:draw()
 end
-gamesm.draw_adventure = gamesm.draw_survival
+
+function gamesm:draw_adventure()
+  self:draw_sky()
+  rectfill(0,64,128,128, self.planet.ground)
+  camera(self.offset, 0)
+  map(0,0, 0,64, 128,8)
+  for m in all(sort(mobs, function(a,b) return a.y>b.y end)) do
+    m:draw()
+  end
+  camera()
+  hud:draw()
+end
 
 function gamesm:draw_demo()
   self:draw_survival()

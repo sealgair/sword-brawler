@@ -128,7 +128,7 @@ hud = {
   sprite=sprite{s=64, w=4, h=2},
   meeple=subsprite(68, 0, 0, 4, 4),
   coin=subsprite(68, 0, 4, 4, 4),
-  choosers=map(range(1,4), chooser),
+  choosers=lmap(range(1,4), chooser),
 }
 
 function hud:draw()

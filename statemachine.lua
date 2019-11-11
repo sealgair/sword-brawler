@@ -1,7 +1,12 @@
 statemachine = class({
-  states={"initial"},
   transitions={},
 })
+
+function statemachine:init()
+  local state = self.state
+  self.state = false
+  self:dotransition{to=state} -- initial transition
+end
 
 function statemachine:update()
   local stateup = "update_"..self.state
@@ -24,8 +29,10 @@ function statemachine:gettransition(action)
 end
 
 function statemachine:dotransition(trans, ...)
-  if (self.exit_state) self:exit_state(self.state, ...)
-  if (self["exit_"..self.state]) self["exit_"..self.state](self, trans.to, ...)
+  if self.state then
+    if (self.exit_state) self:exit_state(self.state, ...)
+    if (self["exit_"..self.state]) self["exit_"..self.state](self, trans.to, ...)
+  end
 
   local from = self.state
   self.state = trans.to
@@ -45,6 +52,7 @@ end
 timedstatemachine = statemachine.subclass({statetimer=0, timeouts={}})
 
 function timedstatemachine:init()
+  statemachine.init(self)
   self.timeouts = copy(self.timeouts)
   self.statetimer = self.timeouts[self.state] or 0
 end
@@ -68,5 +76,5 @@ function timedstatemachine:update()
 end
 
 function timedstatemachine:scaletimeouts(scale)
-  self.timeouts = map(self.timeouts, function(t) return t*scale end)
+  self.timeouts = lmap(self.timeouts, function(t) return t*scale end)
 end

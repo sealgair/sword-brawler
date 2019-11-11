@@ -96,7 +96,7 @@ animation = sprite.subclass({
 })
 
 function animation:init(sprites)
-  self.sprites = map(sprites, sprite)
+  self.sprites = lmap(sprites, sprite)
   self:start(0)
 end
 

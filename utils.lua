@@ -149,7 +149,7 @@ function kmap(l, fn)
   return new
 end
 
-function map(l, fn)
+function lmap(l, fn)
   return kmap(l, function(k,v) return k, fn(v) end)
 end
 

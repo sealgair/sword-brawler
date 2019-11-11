@@ -14,7 +14,7 @@ function weaponsprites(sprites)
 end
 
 function dyinganim(ps)
-  return append({ps, ps, {s=ps, o=false}}, map(range(1,4), function(s)
+  return append({ps, ps, {s=ps, o=false}}, lmap(range(1,4), function(s)
     return {s=s, so={7,14}, pswap={}, o=false}
   end))
 end
@@ -151,14 +151,13 @@ mob = timedstatemachine.subclass{
 }
 
 function mob:init(x, y, pswap)
-  timedstatemachine.init(self)
   add(mobs, self)
   self.x = x
   self.y = y
 
   function outlinesprite(s, extra)
     if (type(s) ~= "table") s = {s=s}
-    if (not s.s) return map(s, function(ss) return outlinesprite(ss, extra) end)
+    if (not s.s) return lmap(s, function(ss) return outlinesprite(ss, extra) end)
     for k,v in pairs(extra) do
       if (s[k] == nil) s[k] = v
     end
@@ -176,12 +175,13 @@ function mob:init(x, y, pswap)
     so=self.skipoutline,
   }
   if (self.head) self.head = makebody(self.head)
-  self.sprites = map(self.sprites, makebody)
-  self.withsprites = map(self.withsprites, makeoutline{
+  self.sprites = lmap(self.sprites, makebody)
+  self.withsprites = lmap(self.withsprites, makeoutline{
     o=self.outline,
     so=self.withskipoutline,
   })
 
+  timedstatemachine.init(self)
   local speedup = (8-self.spd)/7
   self.timeouts.winding *= speedup
   self.timeouts.attacking *= speedup

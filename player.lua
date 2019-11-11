@@ -16,7 +16,7 @@ player = mob.subclass{
 }
 
 players = {}
-scores = map(range(1,4), function() return {tries=0, coins=0} end)
+scores = lmap(range(1,4), function() return {tries=0, coins=0} end)
 
 function player:init(p, x, y)
   -- self.super.init(self, x, y)
@@ -160,7 +160,7 @@ redplayer = player.subclass{
     dodging=range(45,46),
     dying=dyinganim(47),
   },
-  withsprites=weaponsprites(map(range(96,108,2), function(s)
+  withsprites=weaponsprites(lmap(range(96,108,2), function(s)
     return {s=s, w=2}
   end)),
   str=2,
