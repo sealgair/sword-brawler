@@ -346,3 +346,5 @@ function parry_villain:reactto(inrange, ...)
     end
   end
 end
+
+villains = {coward_villain, aggro_villain, backstab_villain, parry_villain}

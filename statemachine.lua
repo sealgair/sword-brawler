@@ -7,6 +7,16 @@ function statemachine:init(target)
   self.target = target
 end
 
+function statemachine:update()
+  local stateup = "update_"..self.state
+  if (self[stateup]) self[stateup](self)
+end
+
+function statemachine:draw()
+  local statedraw = "draw_"..self.state
+  if (self[statedraw]) self[statedraw](self)
+end
+
 function statemachine:gettransition(action)
   local trans = self.transitions[self.state]
   if trans ~= nil then
@@ -18,17 +28,19 @@ function statemachine:gettransition(action)
 end
 
 function statemachine:dotransition(trans, ...)
-
-  if (self.target.exit_state) self.target:exit_state(self.state, ...)
-  if (self.target["exit_"..self.state]) self.target["exit_"..self.state](self.target, trans.to, ...)
+  if self.target then
+    if (self.target.exit_state) self.target:exit_state(self.state, ...)
+    if (self.target["exit_"..self.state]) self.target["exit_"..self.state](self.target, trans.to, ...)
+  end
 
   local from = self.state
   self.state = trans.to
-
-  if (self.target.enter_state) self.target:enter_state(self.state, ...)
-  if (self.target["enter_"..self.state]) self.target["enter_"..self.state](self.target, from, ...)
-  if trans.callback ~= nil and self.target[trans.callback] ~= nil then
-    self.target[trans.callback](self.target, ...)
+  if self.target then
+    if (self.target.enter_state) self.target:enter_state(self.state, ...)
+    if (self.target["enter_"..self.state]) self.target["enter_"..self.state](self.target, from, ...)
+    if trans.callback ~= nil and self.target[trans.callback] ~= nil then
+      self.target[trans.callback](self.target, ...)
+    end
   end
 end
 
@@ -54,7 +66,8 @@ function timedstatemachine:dotransition(trans, timeout, ...)
   statemachine.dotransition(self, trans, timeout, ...)
 end
 
-function timedstatemachine:update(dt)
+function timedstatemachine:update()
+  statemachine.update(self)
   if self.statetimer > 0 then
     self.statetimer -= dt
     if self.statetimer <= 0 then
@@ -153,17 +166,17 @@ mobstatemachine = timedstatemachine.subclass({
       timeout= { to= dead callback= die }
     }
   ]]),
-  timeouts={
-    spawned=0.8,
-    winding=0.3,
-    dodging=0.15,
-    recover=0.2,
-    parrying=0.3,
-    attacking=0.2,
-    smashing=0.3,
-    staggered=1,
-    overextended=0.75,
-    stunned=0.8,
-    dying=1.2,
-  }
+  timeouts=parse_pion([[
+    spawned= 0.8
+    winding= 0.3
+    dodging= 0.15
+    recover= 0.2
+    parrying= 0.3
+    attacking= 0.2
+    smashing= 0.3
+    staggered= 1
+    overextended= 0.75
+    stunned= 0.8
+    dying= 1.2
+  ]])
 })
