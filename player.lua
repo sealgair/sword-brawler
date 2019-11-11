@@ -37,13 +37,13 @@ function player:think()
     self.wasatk = self.isatk
     self.isatk = btn(btns.atk, self.p)
     if not self.wasatk and self.isatk then
-      self.sm:transition("attack")
+      self:transition("attack")
     end
-    if self.sm.state == "holding" and not self.isatk then
+    if self.state == "holding" and not self.isatk then
       if self:ismoving() then
-        self.sm:transition("release")
+        self:transition("release")
       else
-        self.sm:transition("smash")
+        self:transition("smash")
       end
     end
   else
@@ -55,14 +55,14 @@ function player:think()
   if self.defcool > 0 then
     self.defcool -= dt
   elseif not self.wasdef and self.isdef then
-    if self.sm.state == "defend" then
+    if self.state == "defend" then
       if self:ismoving() then
-        self.sm:transition("dodge")
+        self:transition("dodge")
       else
-        self.sm:transition("parry")
+        self:transition("parry")
       end
     else
-      self.sm:transition("cancel")
+      self:transition("cancel")
     end
   end
 end
@@ -70,9 +70,9 @@ end
 function player:unwind()
   if not self.isatk then
     if self:ismoving() then
-      self.sm:transition("release")
+      self:transition("release")
     else
-      self.sm:transition("smash")
+      self:transition("smash")
     end
   end
 end
@@ -88,7 +88,7 @@ end
 
 -- function player:draw()
 --   mob.draw(self)
---   print("st: "..self.sm.state, 64*self.p, 5)
+--   print("st: "..self.state, 64*self.p, 5)
 --   local s = self:getsprite()
 --   if (s and s.t) print("anim timer: "..s.t, 64*self.p, 11)
 -- end

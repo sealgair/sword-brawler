@@ -100,7 +100,7 @@ end
 -- function villain:draw(...)
 --   -- debug
 --   color(7)
---   print(self.sm.state, self.x, self.y-7)
+--   print(self.state, self.x, self.y-7)
 --   mob.draw(self, ...)
 -- end
 
@@ -110,9 +110,9 @@ end
 
 function villain:unwind()
   if self:ismoving() then
-    self.sm:transition("release")
+    self:transition("release")
   else
-    self.sm:transition("smash")
+    self:transition("smash")
   end
 end
 
@@ -131,7 +131,7 @@ function villain:reactto(inrange, xdiff, ydiff)
   if inrange then
     if self.atkcool <= 0 then
       if rnd() < self.attackrate  then
-        self.sm:transition("attack")
+        self:transition("attack")
       end
       self.atkcool = self.atkcooldown[1] + rnd(self.atkcooldown[2])
     end
@@ -200,7 +200,7 @@ function aggro_villain:reactto(...)
     self.dodgein -= dt
     if self.dodgein <= 0 then
       self.dodgein = nil
-      self.sm:transition("dodge")
+      self:transition("dodge")
     end
   end
 end
@@ -244,7 +244,7 @@ function backstab_villain:movefor(dx, ...)
     elseif dx < r+2 then
       mx = -1
       if dx <= 0 and self.defcool <= 0 then
-        self.sm:transition("dodge")
+        self:transition("dodge")
       end
     end
   end
@@ -255,10 +255,10 @@ function backstab_villain:reactto(inrange, ...)
   if not self.waslooking then
     villain.reactto(self, true, ...)
     if inrange then
-      self.sm:transition("release")
+      self:transition("release")
     end
   else
-    self.sm:transition("cancel")
+    self:transition("cancel")
   end
 end
 
@@ -335,7 +335,7 @@ function parry_villain:reactto(inrange, ...)
         self.react -= dt
         if self.react <= 0 and pstates[tstate] then
           self.react = nil
-          self.sm:transition("parry")
+          self:transition("parry")
         end
       end
     else

@@ -23,7 +23,106 @@ end
 
 mobs = {}
 
-mob = class({
+mob = timedstatemachine.subclass{
+  state="spawned",
+  transitions=parse_pion([[
+    spawned= {
+      timeout= { to= defend }
+    }
+    defend= {
+      attack= { to= winding }
+      hit= { to= staggered }
+      heavyhit= { to= stunned }
+      backstab= { to= dying }
+      parry= { to= parrying }
+      dodge= { to= dodging }
+      parried= { to= stunned }
+      defended= { to= staggered }
+    }
+    staggered= {
+      timeout= { to= defend }
+      dodge= { to= dodging }
+      hit= { to= stunned }
+      heavyhit= { to= dying }
+      backstab= { to= dying }
+    }
+    stunned= {
+      timeout= { to= defend }
+      hit= { to= dying }
+      heavyhit= { to= dying }
+      backstab= { to= dying }
+    }
+    overextended= {
+      timeout= { to= defend }
+      hit= { to= dying }
+      heavyhit= { to= dying }
+      backstab= { to= dying }
+    }
+    winding= {
+      timeout= { to= holding callback= unwind }
+      hit= { to= dying }
+      heavyhit= { to= dying }
+      backstab= { to= dying }
+    }
+    holding= {
+      release= { to= attacking }
+      smash= { to= smashing }
+      cancel= { to= defend }
+      hit= { to= dying }
+      heavyhit= { to= dying }
+      backstab= { to= dying }
+    }
+    dodging= {
+      timeout= { to= recover }
+    }
+    recover= {
+      timeout= { to= defend }
+    }
+    parrying= {
+      timeout= { to= defend }
+      hit= { to= defend callback= parry }
+      heavyhit= { to= defend callback= parry }
+      backstab= { to= dying }
+    }
+    attacking= {
+      timeout= { to= striking callback= strike }
+      hit= { to= dying }
+      heavyhit= { to= dying }
+      backstab= { to= dying }
+    }
+    smashing= {
+      timeout= { to= striking callback= smash }
+      hit= { to= dying }
+      heavyhit= { to= dying }
+      backstab= { to= dying }
+    }
+    striking= {
+      miss= { to= overextended }
+      strike= { to= defend }
+      hit= { to= dying }
+      heavyhit= { to= dying }
+      backstab= { to= dying }
+      parried= { to= stunned }
+      defended= { to= staggered }
+    }
+    dying= {
+      timeout= { to= dead callback= die }
+    }
+  ]]),
+  timeouts=parse_pion([[
+    spawned= 0.8
+    winding= 0.3
+    dodging= 0.15
+    recover= 0.2
+    parrying= 0.3
+    attacking= 0.2
+    smashing= 0.3
+    staggered= 1
+    overextended= 0.75
+    stunned= 0.8
+    dying= 1.2
+  ]]),
+
   x=0, y=0,
   w=8, h=8,
   knockback=0,
@@ -49,9 +148,10 @@ mob = class({
   spd=2,
   def=3,
   rng=2,
-})
+}
 
 function mob:init(x, y, pswap)
+  timedstatemachine.init(self)
   add(mobs, self)
   self.x = x
   self.y = y
@@ -82,17 +182,16 @@ function mob:init(x, y, pswap)
     so=self.withskipoutline,
   })
 
-  self.sm = mobstatemachine(self)
   local speedup = (8-self.spd)/7
-  self.sm.timeouts.winding *= speedup
-  self.sm.timeouts.attacking *= speedup
-  self.sm.timeouts.overextended *= speedup
-  self.sm.timeouts.dodging /= speedup
-  self.sm.timeouts.parrying *= (1+((self.def-1)/3))
+  self.timeouts.winding *= speedup
+  self.timeouts.attacking *= speedup
+  self.timeouts.overextended *= speedup
+  self.timeouts.dodging /= speedup
+  self.timeouts.parrying *= (1+((self.def-1)/3))
 end
 
 function mob:getsprite()
-  local spr = self.sprites[self.sm.state]
+  local spr = self.sprites[self.state]
   if (spr) return spr
   if not self:ismoving() then
     return self.sprites.standing
@@ -102,7 +201,7 @@ function mob:getsprite()
 end
 
 function mob:getwithsprite()
-  return self.withsprites[self.sm.state] or self.withsprites.default
+  return self.withsprites[self.state] or self.withsprites.default
 end
 
 function mob:enter_state(state, timeout)
@@ -120,7 +219,7 @@ function mob:exit_state(state)
 end
 
 function mob:draw()
-  if self.head and self.head.o and self.sm.state ~= "dying" then
+  if self.head and self.head.o and self.state ~= "dying" then
     self.head:outline(self.x, self.y-8, self.flipped)
   end
   local sprite = self:getsprite()
@@ -130,7 +229,7 @@ function mob:draw()
   else
     sprite:draw(self.x, self.y, self.flipped)
   end
-  if self.head and self.sm.state ~= "dying" then
+  if self.head and self.state ~= "dying" then
     self.head:draw_inline(self.x, self.y-8, self.flipped)
   end
   -- debug
@@ -145,7 +244,7 @@ nomovestates = {
   spawned=true,
 }
 function mob:ismoving()
-  if (nomovestates[self.sm.state]) return false
+  if (nomovestates[self.state]) return false
   return self.dir.x ~= 0 or self.dir.y ~= 0
 end
 
@@ -168,12 +267,12 @@ function mob:move()
 end
 
 function mob:update()
-  self.sm:update(dt)
+  timedstatemachine.update(self)
   for sprite in all{self:getsprite(), self:getwithsprite()} do
     if (sprite.advance) sprite:advance(dt)
   end
 
-  if self.sm.state ~= "dying" then
+  if self.state ~= "dying" then
     if not self.dodging then
       self.dir = {x=0, y=0}
       self:think()
@@ -200,7 +299,7 @@ function mob:hitbox()
     w=self.w, h=self.h
   }
   local atkstates = {attacking=true, smashing=true, striking=true, parrying=true}
-  if atkstates[self.sm.state] then
+  if atkstates[self.state] then
     box.w += self.rng - self.w/2
     box.x += self.w/2
     if (self.flipped) box.x -= self.rng + self.w/2
@@ -245,9 +344,9 @@ end
 -- my attack was parried
 function mob:parried(atk, other)
   if atk > self.def then
-    self.sm:transition("parried")
+    self:transition("parried")
   else
-    self.sm:transition("defended")
+    self:transition("defended")
   end
 end
 
@@ -259,9 +358,9 @@ function mob:connectattack(heavy)
     hit:hit(str, self)
   end
   if heavy and #hits <= 0 then
-    self.sm:transition("miss")
+    self:transition("miss")
   else
-    self.sm:transition("strike")
+    self:transition("strike")
   end
 end
 
@@ -292,8 +391,8 @@ function mob:hit(atk, other)
   elseif atk > self.def then
     tr = 'heavyhit'
   end
-  self.sm:transition(tr, nil, atk, other)
-  other:addscore(scorestypes[self.sm.state] or 0)
+  self:transition(tr, nil, atk, other)
+  other:addscore(scorestypes[self.state] or 0)
 
   --knockback
   self.knockback += max(1, atk-self.def)^2/2*yesno(other.flipped, -1, 1)

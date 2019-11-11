@@ -3,10 +3,6 @@ statemachine = class({
   transitions={},
 })
 
-function statemachine:init(target)
-  self.target = target
-end
-
 function statemachine:update()
   local stateup = "update_"..self.state
   if (self[stateup]) self[stateup](self)
@@ -28,19 +24,15 @@ function statemachine:gettransition(action)
 end
 
 function statemachine:dotransition(trans, ...)
-  if self.target then
-    if (self.target.exit_state) self.target:exit_state(self.state, ...)
-    if (self.target["exit_"..self.state]) self.target["exit_"..self.state](self.target, trans.to, ...)
-  end
+  if (self.exit_state) self:exit_state(self.state, ...)
+  if (self["exit_"..self.state]) self["exit_"..self.state](self, trans.to, ...)
 
   local from = self.state
   self.state = trans.to
-  if self.target then
-    if (self.target.enter_state) self.target:enter_state(self.state, ...)
-    if (self.target["enter_"..self.state]) self.target["enter_"..self.state](self.target, from, ...)
-    if trans.callback ~= nil and self.target[trans.callback] ~= nil then
-      self.target[trans.callback](self.target, ...)
-    end
+  if (self.enter_state) self:enter_state(self.state, ...)
+  if (self["enter_"..self.state]) self["enter_"..self.state](self, from, ...)
+  if trans.callback ~= nil and self[trans.callback] ~= nil then
+    self[trans.callback](self, ...)
   end
 end
 
@@ -52,8 +44,7 @@ end
 
 timedstatemachine = statemachine.subclass({statetimer=0, timeouts={}})
 
-function timedstatemachine:init(...)
-  statemachine.init(self, ...)
+function timedstatemachine:init()
   self.timeouts = copy(self.timeouts)
   self.statetimer = self.timeouts[self.state] or 0
 end
@@ -79,104 +70,3 @@ end
 function timedstatemachine:scaletimeouts(scale)
   self.timeouts = map(self.timeouts, function(t) return t*scale end)
 end
-
-mobstatemachine = timedstatemachine.subclass({
-  state="spawned",
-  transitions=parse_pion([[
-    spawned= {
-      timeout= { to= defend }
-    }
-    defend= {
-      attack= { to= winding }
-      hit= { to= staggered }
-      heavyhit= { to= stunned }
-      backstab= { to= dying }
-      parry= { to= parrying }
-      dodge= { to= dodging }
-      parried= { to= stunned }
-      defended= { to= staggered }
-    }
-    staggered= {
-      timeout= { to= defend }
-      dodge= { to= dodging }
-      hit= { to= stunned }
-      heavyhit= { to= dying }
-      backstab= { to= dying }
-    }
-    stunned= {
-      timeout= { to= defend }
-      hit= { to= dying }
-      heavyhit= { to= dying }
-      backstab= { to= dying }
-    }
-    overextended= {
-      timeout= { to= defend }
-      hit= { to= dying }
-      heavyhit= { to= dying }
-      backstab= { to= dying }
-    }
-    winding= {
-      timeout= { to= holding callback= unwind }
-      hit= { to= dying }
-      heavyhit= { to= dying }
-      backstab= { to= dying }
-    }
-    holding= {
-      release= { to= attacking }
-      smash= { to= smashing }
-      cancel= { to= defend }
-      hit= { to= dying }
-      heavyhit= { to= dying }
-      backstab= { to= dying }
-    }
-    dodging= {
-      timeout= { to= recover }
-    }
-    recover= {
-      timeout= { to= defend }
-    }
-    parrying= {
-      timeout= { to= defend }
-      hit= { to= defend callback= parry }
-      heavyhit= { to= defend callback= parry }
-      backstab= { to= dying }
-    }
-    attacking= {
-      timeout= { to= striking callback= strike }
-      hit= { to= dying }
-      heavyhit= { to= dying }
-      backstab= { to= dying }
-    }
-    smashing= {
-      timeout= { to= striking callback= smash }
-      hit= { to= dying }
-      heavyhit= { to= dying }
-      backstab= { to= dying }
-    }
-    striking= {
-      miss= { to= overextended }
-      strike= { to= defend }
-      hit= { to= dying }
-      heavyhit= { to= dying }
-      backstab= { to= dying }
-      parried= { to= stunned }
-      defended= { to= staggered }
-    }
-    dying= {
-      timeout= { to= dead callback= die }
-    }
-  ]]),
-  timeouts=parse_pion([[
-    spawned= 0.8
-    winding= 0.3
-    dodging= 0.15
-    recover= 0.2
-    parrying= 0.3
-    attacking= 0.2
-    smashing= 0.3
-    staggered= 1
-    overextended= 0.75
-    stunned= 0.8
-    dying= 1.2
-  ]])
-})
