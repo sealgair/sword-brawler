@@ -21,8 +21,6 @@ end
 
 -- mob definition
 
-mobs = {}
-
 mob = timedstatemachine.subclass{
   state="spawned",
   transitions=parse_pion([[
@@ -150,8 +148,9 @@ mob = timedstatemachine.subclass{
   rng=2,
 }
 
-function mob:init(x, y, pswap)
-  add(mobs, self)
+function mob:init(world, x, y, pswap)
+  self.world = world
+  add(self.world.mobs, self)
   self.x = x
   self.y = y
 
@@ -255,8 +254,7 @@ function mob:move()
 
     -- TODO: generalize atk check so it works for villains too
     if (not self.isatk and self.dir.x ~= 0) self.flipped = self.dir.x < 0
-    self.x = bound(self.x+self.dir.x*walkspd*dt, 0, 120)
-    self.y = bound(self.y+self.dir.y*walkspd*dt, 58, 120)
+    self.x, self.y = self.world:bound(self.x+self.dir.x*walkspd*dt, self.y+self.dir.y*walkspd*dt)
   end
 
   if self.knockback ~= 0 then
@@ -290,7 +288,7 @@ end
 function mob:think() end
 
 function mob:die()
-  del(mobs, self)
+  del(self.world.mobs, self)
 end
 
 function mob:hitbox()
@@ -310,7 +308,7 @@ end
 function mob:collides(ff)
   if (ff == nil) ff = friendlyfire
   local hits = {}
-  for mob in all(mobs) do
+  for mob in all(self.world.mobs) do
     if mob ~= self and (ff or mob.team == nil or mob.team ~= self.team) then
       -- check boxes for overlap
       if intersects(self:hitbox(), mob:hitbox()) then

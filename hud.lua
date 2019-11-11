@@ -46,7 +46,7 @@ function chooser:update()
   elseif self.state == 'chosen' then
     self.state = 'respawn'
     self.timer = 10
-    player_choices[self.choice](self.p, 10, 60 + (10*self.p))
+    game:spawnplayer(player_choices[self.choice], self.p)
   elseif self.state == 'respawn' then
     if scores[self.p].coins >= respawn_cost and self.timer > 0 then
       self.timer -= dt

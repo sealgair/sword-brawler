@@ -18,9 +18,9 @@ player = mob.subclass{
 players = {}
 scores = lmap(range(1,4), function() return {tries=0, coins=0} end)
 
-function player:init(p, x, y)
+function player:init(world, p, x, y)
   -- self.super.init(self, x, y)
-  mob.init(self, x, y)
+  mob.init(self, world, x, y)
   self.p = p-1
   players[p] = self
   self.score = scores[p]

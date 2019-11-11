@@ -1,35 +1,6 @@
 -- background
-day = 60*5
-twilight = day*0.04
-dtime = day*0.75+twilight+rnd(day*.25)
-
-planets = {
-  {
-    globe=sprite(69),
-    ground=15,
-  },
-  {
-    globe=sprite(70),
-    ground=11,
-  },
-  {
-    globe=sprite(71),
-    ground=13,
-  },
-}
 
 stars = {}
-
-function makestars(n)
-  colors={1,5,6,7,13}
-  for i=1,n do
-    add(stars, {
-      x=flr(rnd(128)),
-      y=flr(16+rnd(48)),
-      c=colors[ceil(rnd(#colors))]
-    })
-  end
-end
 
 gamesm = timedstatemachine.subclass{
   state="demo",
@@ -67,6 +38,10 @@ function gamesm:init()
   timedstatemachine.init(self, self)
 end
 
+function gamesm:spawnplayer(ptype, p)
+  ptype(self.world, p, self.world.offset+10, 60 + (10*p))
+end
+
 function gamesm:update_scores()
   for p=0,3 do
     if (btnp(🅾️, p) or btnp(❎, p)) self:transition("start")
@@ -84,10 +59,7 @@ end
 
 function gamesm:update_game()
   hud:update()
-  for m in all(mobs) do
-    m:update()
-  end
-  dtime = fwrap(dtime+dt, 0, day)
+  self.world:update()
 end
 
 function gamesm:update_demo()
@@ -97,24 +69,21 @@ end
 
 
 function gamesm:enter_adventure()
-  mobs = {}
-  self.offset = 0
-  self.planet = planets[1]
+  self.world = world(planets[1], 0)
 end
 
 function gamesm:update_adventure()
   self:update_game()
   for p, player in pairs(players) do
-    self.offset = max(self.offset, player.x+32 - 128)
+    self.world.offset = min(max(self.world.offset, player.x+32 - 128), 896)
   end
 end
 
 function gamesm:enter_survival()
-  mobs = {}
+  self.world = world(rndchoice(planets))
   self.villain_rate = {3,5}
   self.vtime = 0.1
   self.max_villains=5
-  self.planet = rndchoice(planets)
 end
 
 function gamesm:enter_demo()
@@ -123,62 +92,18 @@ end
 
 function gamesm:update_survival()
   self:update_game()
-  if #mobs - count(players) < self.max_villains then
+  if #self.world.mobs - count(players) < self.max_villains then
     self.vtime -= dt*count(players)
     if self.vtime <= 0 then
       local vtype = rndchoice(villains, rnd()*rnd())
       local body = rndchoice(villain_bodies, rnd()*rnd())
       local weapon = rndchoice(villain_weapons)
-      vtype(flr(rnd(2))*139-10, rnd(64)+64, body, weapon)
+      vtype(self.world, flr(rnd(2))*139-10, rnd(64)+64, body, weapon)
       self.vtime = self.villain_rate[1] + rnd(self.villain_rate[2])
-      if vtype == coward_villain and #mobs - count(players) <= 1 then
+      if vtype == coward_villain and #self.world.mobs - count(players) <= 1 then
         -- make sure a friend comes soon
         self.vtime /= 2
       end
-    end
-  end
-end
-
-twilight_colors={13,14,2,1}
-function gamesm:draw_sky()
-  -- 0 is noon, 0.5 is midnight
-  -- 0.25 is dusk, 0.75 is dawn
-  local t = (dtime/day)
-  local cn=#twilight_colors
-  local twl = twilight/day
-  local twl2 = twl/2
-  local sky=12 -- daytime
-
-  if abs(t-0.25) < twl2 then
-    --dusk
-    sky=twilight_colors[ceil( (t-0.25+twl2)/twl * #twilight_colors )]
-  elseif abs(t-0.75) < twl2 then
-    -- dawn
-    sky=twilight_colors[ceil( -(t-0.75-twl2)/twl * #twilight_colors )]
-  elseif between(t, 0.25, 0.75) then
-    -- night (TODO: light polution?)
-    sky = 0
-  end
-
-  rectfill(0,0,127,127,sky)
-
-  -- draw stars
-  if sky ~= 12 then
-    for s in all(stars) do
-      if darker(sky, s.c) and rnd()>0.02 then
-        pset(s.x, s.y, s.c)
-      end
-    end
-  end
-
-  if self.planet then
-    -- draw planets
-    local pl = find(self.planet, planets)
-    for i=-1,1,2 do
-      local otherp = planets[wrap(pl+i, 3)]
-      local x, y = 60+(i*32), 20
-      otherp.globe:draw(x, y)
-    	shadow(x+4, y+4, 4, fwrap(t+((30/360)*i)), sky)
     end
   end
 end
@@ -191,28 +116,17 @@ function gamesm:draw_scores()
 end
 
 function gamesm:draw_survival()
-  self:draw_sky()
-  rectfill(0,64,128,128, self.planet.ground)
-  for m in all(sort(mobs, function(a,b) return a.y>b.y end)) do
-    m:draw()
-  end
+  self.world:draw()
   hud:draw()
 end
 
 function gamesm:draw_adventure()
-  self:draw_sky()
-  rectfill(0,64,128,128, self.planet.ground)
-  camera(self.offset, 0)
-  map(0,0, 0,64, 128,8)
-  for m in all(sort(mobs, function(a,b) return a.y>b.y end)) do
-    m:draw()
-  end
-  camera()
+  self.world:draw()
   hud:draw()
 end
 
 function gamesm:draw_demo()
-  self:draw_survival()
+  self.world:draw()
   rectfill(0,0, 128,16, 5)
   rect(0,0, 127,16, 10)
   rect(1,1, 126,15, 9)
@@ -255,7 +169,6 @@ end
 -- system callbacks
 
 function _init()
-  makestars(30+rnd(20))
   toggle_friendlyfire(true)
   game = gamesm()
 end

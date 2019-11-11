@@ -84,7 +84,7 @@ villain = mob.subclass{
   reflexes=0.3,
 }
 
-function villain:init(x, y, body, weapon)
+function villain:init(world, x, y, body, weapon)
   local stats = {'str', 'spd', 'def', 'rng'}
   if (body) update(self, body)
   if weapon then
@@ -94,7 +94,7 @@ function villain:init(x, y, body, weapon)
     end
     update(self, weapon)
   end
-  mob.init(self, x, y, self.vpalette)
+  mob.init(self, world, x, y, self.vpalette)
 end
 
 -- function villain:draw(...)
@@ -141,7 +141,7 @@ end
 function villain:think()
   if not self.target then
     local d
-    for mob in all(mobs) do
+    for mob in all(self.world.mobs) do
       if mob.team ~= self.team and (not d or cabdist(self, mob) < d) then
         self.target = mob
         d = cabdist(self, mob)
@@ -282,7 +282,7 @@ coward_villain = villain.subclass{
 function coward_villain:movefor(xdist, ...)
   local mx, my = villain.movefor(self, xdist, ...)
   local tdist = cabdist(self, self.target)
-  for mob in all(mobs) do
+  for mob in all(self.world.mobs) do
     if mob ~= self and mob.target == self.target and cabdist(self, mob) < tdist*1.5 then
       -- has a friend
       return mx, my

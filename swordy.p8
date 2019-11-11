@@ -13,6 +13,7 @@ __lua__
 #include player.lua
 #include villain.lua
 #include hud.lua
+#include world.lua
 #include game.lua
 
 __gfx__
