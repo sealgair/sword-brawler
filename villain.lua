@@ -1,21 +1,5 @@
 -- villains
 
-function make_giant(head)
-  return {
-    sprites={
-      standing=176,
-      walking=range(176,179),
-      dodging=180,
-      dying=dyinganim(181),
-    },
-    head=head,
-    str=3,
-    spd=1,
-    def=3,
-    rng=0,
-  }
-end
-
 villain_bodies = {
   { -- snake
     sprites={
@@ -41,10 +25,20 @@ villain_bodies = {
     def=1,
     rng=-2,
   },
+  { -- giant
+    sprites={
+      standing=176,
+      walking=range(176,179),
+      dodging=180,
+      dying=dyinganim(181),
+    },
+    head=true,
+    str=3,
+    spd=1,
+    def=3,
+    rng=0,
+  },
 }
-for h in all(range(160,164)) do
-  add(villain_bodies, make_giant(h))
-end
 
 villain_weapons = {
   { -- dagger
@@ -93,6 +87,9 @@ function villain:init(world, x, y, body, weapon)
       weapon[stat] = nil
     end
     update(self, weapon)
+  end
+  if self.head == true then
+    self.head = rndchoice(range(160,164))
   end
   mob.init(self, world, x, y, self.vpalette)
 end

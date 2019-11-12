@@ -39,7 +39,7 @@ function world:init(planet, map)
   self.spawntypes={}
   local vsprites = {128, 144, 176}
   for b=1,3 do
-    for v=1,3 do
+    for v=1,4 do
       self.spawntypes[vsprites[b]+v-1] = {
         color=villains[v],
         species=villain_bodies[b],
@@ -164,7 +164,7 @@ function world:update()
     m:update()
   end
   self.dtime = fwrap(self.dtime+dt, 0, self.day)
-  
+
   if self.map then
     for p, player in pairs(players) do
       self.offset = bound(self.offset, player.x+48 - 128, 896)
