@@ -21,10 +21,11 @@ world = class{
   starcolors={1,5,6,7,13},
   twilight_colors={13,14,2,1},
   flags={
-    spawn=0,
+    drawn=0,
     obstacle=1,
+    spawn=6,
     stop=7,
-  }
+  },
 }
 
 function world:init(planet, map)
@@ -34,6 +35,17 @@ function world:init(planet, map)
   self.twilight *= self.day
   self.dtime = self.day*0.75+self.twilight+rnd(self.day*.25)
   self.mobs = {}
+  self.spawned = {}
+  self.spawntypes={}
+  local vsprites = {128, 144, 176}
+  for b=1,3 do
+    for v=1,3 do
+      self.spawntypes[vsprites[b]+v-1] = {
+        color=villains[v],
+        species=villain_bodies[b],
+      }
+    end
+  end
 
   self.stars = {}
   for i=1,20+rnd(10) do
@@ -140,7 +152,7 @@ function world:draw()
   self:draw_sky()
   rectfill(0,64,128,128, self.planet.ground)
   camera(self.offset, 0)
-  if (self.map) map(0,self.map*8, 0,64, 128,8)
+  if (self.map) map(0,self.map*8, 0,64, 128,8, 0b1)
   for m in all(sort(self.mobs, function(a,b) return a.y>b.y end)) do
     m:draw()
   end
@@ -152,4 +164,22 @@ function world:update()
     m:update()
   end
   self.dtime = fwrap(self.dtime+dt, 0, self.day)
+  
+  if self.map then
+    for p, player in pairs(players) do
+      self.offset = bound(self.offset, player.x+48 - 128, 896)
+    end
+
+    forbox(flr(self.offset/8), self.map*8, 17, 8, function(x, y)
+      local s = mget(x, y)
+      if self.spawntypes[s] then
+        local spawnkey = x..','..y
+        if not self.spawned[spawnkey] then
+          self.spawned[spawnkey] = true
+          local villain = self.spawntypes[s]
+          villain.color(self, x*8, y*8+64, villain.species, rndchoice(villain_weapons))
+        end
+      end
+    end)
+  end
 end

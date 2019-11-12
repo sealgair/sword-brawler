@@ -77,9 +77,6 @@ end
 
 function gamesm:update_adventure()
   self:update_game()
-  for p, player in pairs(players) do
-    self.world.offset = min(max(self.world.offset, player.x+32 - 128), 896)
-  end
 end
 
 function gamesm:enter_survival()
