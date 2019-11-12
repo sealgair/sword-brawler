@@ -1,7 +1,5 @@
 -- background
 
-stars = {}
-
 gamesm = timedstatemachine.subclass{
   state="demo",
   transitions=parse_pion([[
@@ -29,7 +27,7 @@ gamesm = timedstatemachine.subclass{
     demo= 30
     scores= 30
     choose= 180
-  ]])
+  ]]),
 }
 
 function gamesm:init()
@@ -46,6 +44,11 @@ function gamesm:update_scores()
   for p=0,3 do
     if (btnp(🅾️, p) or btnp(❎, p)) self:transition("start")
   end
+end
+
+function gamesm:enter_choose()
+  -- TODO: save this
+  self.adventure = true
 end
 
 function gamesm:update_choose()

@@ -319,7 +319,7 @@ function parry_villain:reactto(inrange, ...)
   local rstates = {attacking=true, smashing=true, winding=true, holding=true}
   local pstates = {attacking=true, smashing=true}
   local astates = {overextended=true, stunned=true, staggered=true}
-  local tstate = self.target.sm.state
+  local tstate = self.target.state
   if inrange then
     local attacked = false
     if self.mood == 'aggro' then

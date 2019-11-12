@@ -152,7 +152,7 @@ function hud:draw()
       print(player.score.coins, x+7, 10)
 
       -- debug
-      -- print(player.sm.state..":"..player.sm.statetimer, x, 12+p*5)
+      -- print(player.state..":"..player.statetimer, x, 12+p*5)
     else
       self.choosers[p]:draw(x, 0)
     end

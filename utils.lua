@@ -186,6 +186,10 @@ function rndchoice(t, r)
   return t[ceil(r*#t)]
 end
 
+function fmget(x, y, f)
+  return fget(mget(x,y),f)
+end
+
 function sscoord(s)
   return {
     x = (s%16)*8,

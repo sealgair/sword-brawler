@@ -20,6 +20,11 @@ world = class{
   twilight=0.04,
   starcolors={1,5,6,7,13},
   twilight_colors={13,14,2,1},
+  flags={
+    spawn=0,
+    obstacle=1,
+    stop=7,
+  }
 }
 
 function world:init(planet, map)
@@ -31,7 +36,7 @@ function world:init(planet, map)
   self.mobs = {}
 
   self.stars = {}
-  for i=1,30+rnd(20) do
+  for i=1,20+rnd(10) do
     add(stars, {
       x=flr(rnd(128)),
       y=flr(16+rnd(48)),
@@ -40,10 +45,52 @@ function world:init(planet, map)
   end
 end
 
-function world:bound(x, y)
-  x = bound(x, self.offset, yesno(self.map, 1016, 120))
-  y = bound(y, 58,120)
-  return x, y
+function world:trymove(hitbox, dx, dy)
+  local left = hitbox.x
+  local right = left+hitbox.w
+  local top = hitbox.y-64
+  local bottom = top+hitbox.h
+
+  local xmin = self.offset
+  local xmax = yesno(self.map, 1024, 127)
+  local ymin = -6
+  local ymax = 64
+
+  if self.map then
+    -- check for obstacles
+    local sx = flr(left/8)
+    local sx2 = flr((right-1)/8)
+    local sy = self.map*8 + flr(top/8)
+    local sy2 = self.map*8 + flr((bottom-1)/8)
+
+    function obstacle(x1, x2, y1, y2)
+      for x in all{x1, x2 or x1} do
+        for y in all{y1, y2 or y1} do
+          if (fmget(x, y, self.flags.obstacle)) return true
+        end
+      end
+    end
+
+    if obstacle(sx-1, nil, sy, sy2) then --left
+      xmin = (sx-1)*8+8
+    end
+    if obstacle(sx+1, nil, sy, sy2) then --right
+      xmax = (sx+1)*8
+    end
+    if obstacle(sx, sx2, sy-1) then --top
+      ymin = (sy-1)*8+8
+    end
+    if obstacle(sx, sx2, sy+1) then --bottom
+      ymax = (sy+1)*8
+    end
+  end
+
+  local ndx = bound(dx, xmin-left, xmax-right)
+  local ndy = bound(dy, ymin-top, ymax-bottom)
+  -- to fix jumping when clipping isn't quite right
+  -- ndx = bound(ndx, min(dx, 0), max(dx, 0))
+  -- ndy = bound(ndy, min(dy, 0), max(dy, 0))
+  return ndx, ndy
 end
 
 function world:draw_sky()
@@ -57,7 +104,7 @@ function world:draw_sky()
 
   if abs(t-0.25) < twl2 then
     --dusk
-    sky=tself.wilight_colors[ceil( (t-0.25+twl2)/twl * #self.twilight_colors )]
+    sky=self.twilight_colors[ceil( (t-0.25+twl2)/twl * #self.twilight_colors )]
   elseif abs(t-0.75) < twl2 then
     -- dawn
     sky=self.twilight_colors[ceil( -(t-0.75-twl2)/twl * #self.twilight_colors )]

@@ -254,7 +254,9 @@ function mob:move()
 
     -- TODO: generalize atk check so it works for villains too
     if (not self.isatk and self.dir.x ~= 0) self.flipped = self.dir.x < 0
-    self.x, self.y = self.world:bound(self.x+self.dir.x*walkspd*dt, self.y+self.dir.y*walkspd*dt)
+    local dx, dy = self.world:trymove(self:hitbox(), self.dir.x*walkspd*dt, self.dir.y*walkspd*dt)
+    self.x += dx
+    self.y += dy
   end
 
   if self.knockback ~= 0 then
