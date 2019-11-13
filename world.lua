@@ -32,6 +32,7 @@ function world:init(planet, map)
   self.planet = planet
   self.map = map
   self.offset = 0
+  self.stoppoint = 127
   self.twilight *= self.day
   self.dtime = self.day*0.75+self.twilight+rnd(self.day*.25)
   self.mobs = {}
@@ -64,7 +65,7 @@ function world:trymove(hitbox, dx, dy)
   local bottom = top+hitbox.h
 
   local xmin = self.offset
-  local xmax = yesno(self.map, 1024, 127)
+  local xmax = yesno(self.map, self.stoppoint, 127)
   local ymin = -6
   local ymax = 64
 
@@ -157,6 +158,8 @@ function world:draw()
     m:draw()
   end
   camera()
+
+  -- TODO: go arrow if you haven't moved in a bit
 end
 
 function world:update()
@@ -166,11 +169,22 @@ function world:update()
   self.dtime = fwrap(self.dtime+dt, 0, self.day)
 
   if self.map then
-    for p, player in pairs(players) do
-      self.offset = bound(self.offset, player.x+48 - 128, 896)
+    if self.offset > self.stoppoint-128 and #self.mobs == count(players) and count(players) > 0 then
+      local x
+      for i=flr(self.stoppoint/8),128 do
+        x=i
+        if fmget(x, self.map*8, self.flags.stop) then
+          break
+        end
+      end
+      self.stoppoint = x*8+8
     end
 
-    forbox(flr(self.offset/8), self.map*8, 17, 8, function(x, y)
+    for p, player in pairs(players) do
+      self.offset = bound(self.offset, min(player.x+48 - 128, self.stoppoint-127), min(896, self.offset+2))
+    end
+
+    forbox(flr(self.offset/8), self.map*8, 16, 8, function(x, y)
       local s = mget(x, y)
       if self.spawntypes[s] then
         local spawnkey = x..','..y
