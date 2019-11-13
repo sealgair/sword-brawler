@@ -50,7 +50,7 @@ function world:init(planet, map)
 
   self.stars = {}
   for i=1,20+rnd(10) do
-    add(stars, {
+    add(self.stars, {
       x=flr(rnd(128)),
       y=flr(16+rnd(48)),
       c=self.starcolors[ceil(rnd(#self.starcolors))]
@@ -130,7 +130,7 @@ function world:draw_sky()
 
   -- draw stars
   if sky ~= 12 then
-    for s in all(stars) do
+    for s in all(self.stars) do
       if darker(sky, s.c) and rnd()>0.02 then
         pset(s.x, s.y, s.c)
       end
@@ -160,6 +160,8 @@ function world:draw()
   camera()
 
   -- TODO: go arrow if you haven't moved in a bit
+  color(8)
+  print(#self.mobs, 5, 120)
 end
 
 function world:update()
@@ -180,8 +182,28 @@ function world:update()
       self.stoppoint = x*8+8
     end
 
+    local wasoffset = self.offset
     for p, player in pairs(players) do
       self.offset = bound(self.offset, min(player.x+48 - 128, self.stoppoint-127), min(896, self.offset+2))
+    end
+
+    function spawn(s, x, y)
+      local villain = self.spawntypes[s]
+      villain.color(self, x*8, y*8+64, villain.species, rndchoice(villain_weapons))
+    end
+
+    if wasoffset ~= self.offset and self.offset == self.stoppoint-127 then
+      -- find previous [difficulty*2] villains and spawn them
+      local spawned=0
+      local o=flr(self.offset/8)-1
+      forbox(o, self.map*8, -o, 8, function(x,y)
+        local s = mget(x, y)
+        if self.spawntypes[s] then
+          spawn(s, x, y)
+          spawned += 1
+        end
+        if (spawned >= difficulty*2) return true
+      end)
     end
 
     forbox(flr(self.offset/8), self.map*8, 16, 8, function(x, y)
@@ -190,8 +212,7 @@ function world:update()
         local spawnkey = x..','..y
         if not self.spawned[spawnkey] then
           self.spawned[spawnkey] = true
-          local villain = self.spawntypes[s]
-          villain.color(self, x*8, y*8+64, villain.species, rndchoice(villain_weapons))
+          spawn(s, x, y)
         end
       end
     end)

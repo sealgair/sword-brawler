@@ -198,8 +198,8 @@ function sscoord(s)
 end
 
 function forbox(sx, sy, w, h, callback)
-  for x = sx, sx+w do
-    for y = sy, sy+h do
+  for x = sx, sx+w, sign(w) do
+    for y = sy, sy+h, sign(h) do
       if callback(x, y) then
         return
       end
