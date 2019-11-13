@@ -58,54 +58,6 @@ function world:init(planet, map)
   end
 end
 
-function world:trymove(hitbox, dx, dy)
-  local left = hitbox.x
-  local right = left+hitbox.w
-  local top = hitbox.y-64
-  local bottom = top+hitbox.h
-
-  local xmin = self.offset
-  local xmax = yesno(self.map, self.stoppoint, 127)
-  local ymin = -6
-  local ymax = 64
-
-  if self.map then
-    -- check for obstacles
-    local sx = flr(left/8)
-    local sx2 = flr((right-1)/8)
-    local sy = self.map*8 + flr(top/8)
-    local sy2 = self.map*8 + flr((bottom-1)/8)
-
-    function obstacle(x1, x2, y1, y2)
-      for x in all{x1, x2 or x1} do
-        for y in all{y1, y2 or y1} do
-          if (fmget(x, y, self.flags.obstacle)) return true
-        end
-      end
-    end
-
-    if obstacle(sx-1, nil, sy, sy2) then --left
-      xmin = (sx-1)*8+8
-    end
-    if obstacle(sx+1, nil, sy, sy2) then --right
-      xmax = (sx+1)*8
-    end
-    if obstacle(sx, sx2, sy-1) then --top
-      ymin = (sy-1)*8+8
-    end
-    if obstacle(sx, sx2, sy+1) then --bottom
-      ymax = (sy+1)*8
-    end
-  end
-
-  local ndx = bound(dx, xmin-left, xmax-right)
-  local ndy = bound(dy, ymin-top, ymax-bottom)
-  -- to fix jumping when clipping isn't quite right
-  -- ndx = bound(ndx, min(dx, 0), max(dx, 0))
-  -- ndy = bound(ndy, min(dy, 0), max(dy, 0))
-  return ndx, ndy
-end
-
 function world:draw_sky()
   -- 0 is noon, 0.5 is midnight
   -- 0.25 is dusk, 0.75 is dawn
@@ -160,8 +112,6 @@ function world:draw()
   camera()
 
   -- TODO: go arrow if you haven't moved in a bit
-  color(8)
-  print(#self.mobs, 5, 120)
 end
 
 function world:update()

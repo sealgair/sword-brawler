@@ -254,7 +254,7 @@ function mob:move()
 
     -- TODO: generalize atk check so it works for villains too
     if (not self.isatk and self.dir.x ~= 0) self.flipped = self.dir.x < 0
-    local dx, dy = self.world:trymove(self:hitbox(), self.dir.x*walkspd*dt, self.dir.y*walkspd*dt)
+    local dx, dy = self:trymove(self.dir.x*walkspd*dt, self.dir.y*walkspd*dt)
     self.x += dx
     self.y += dy
   end
@@ -264,6 +264,50 @@ function mob:move()
     self.x += k
     self.knockback -= k
   end
+end
+
+function mob:trymove(dx, dy)
+  local left = self.x
+  local right = left+self.w
+  local top = self.y-64
+  local bottom = top+self.h
+  local map = self.world.map
+
+  local xmin = self.world.offset
+  local xmax = yesno(map, self.world.stoppoint, 127)
+  local ymin = -6
+  local ymax = 64
+
+  if map then
+    -- check for obstacles
+    local sx = flr(left/8)
+    local sx2 = flr((right-1)/8)
+    local sy = map*8 + flr(top/8)
+    local sy2 = map*8 + flr((bottom-1)/8)
+
+    function obstacle(x1, x2, y1, y2)
+      for x in all{x1, x2 or x1} do
+        for y in all{y1, y2 or y1} do
+          if (fmget(x, y, self.world.flags.obstacle)) return true
+        end
+      end
+    end
+
+    if obstacle(sx-1, nil, sy, sy2) then --left
+      xmin = (sx-1)*8+8
+    end
+    if obstacle(sx+1, nil, sy, sy2) then --right
+      xmax = (sx+1)*8
+    end
+    if obstacle(sx, sx2, sy-1) then --top
+      ymin = (sy-1)*8+8
+    end
+    if obstacle(sx, sx2, sy+1) then --bottom
+      ymax = (sy+1)*8
+    end
+  end
+
+  return bound(dx, xmin-left, xmax-right), bound(dy, ymin-top, ymax-bottom)
 end
 
 function mob:update()
