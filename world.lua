@@ -112,6 +112,10 @@ function world:draw()
   camera()
 
   -- TODO: go arrow if you haven't moved in a bit
+
+  --debug
+  color(8)
+  print("mobs: "..#self.mobs, 5, 120)
 end
 
 function world:update()

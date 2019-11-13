@@ -94,6 +94,26 @@ function villain:init(world, x, y, body, weapon)
   mob.init(self, world, x, y, self.vpalette)
 end
 
+function villain:bounds()
+  local xmin, xmax, ymin, ymax = mob.bounds(self)
+  if (self.world.map) xmin, xmax = -20, 1032
+  return xmin, xmax, ymin, ymax
+end
+
+function villain:update()
+  mob.update(self)
+  if not between(self.x, self.world.offset-8, self.world.offset+128) then
+    if self.offcounter == nil then
+      self.offcounter = 1.5
+    else
+      self.offcounter -= dt
+    end
+    if (self.offcounter <= 0) self:die()
+  else
+    self.offcounter = nil
+  end
+end
+
 -- function villain:draw(...)
 --   -- debug
 --   color(7)

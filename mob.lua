@@ -266,6 +266,12 @@ function mob:move()
   end
 end
 
+function mob:bounds()
+  return self.world.offset,
+         yesno(map, self.world.stoppoint, 127),
+         -6, 64
+end
+
 function mob:trymove(dx, dy)
   local left = self.x
   local right = left+self.w
@@ -273,10 +279,7 @@ function mob:trymove(dx, dy)
   local bottom = top+self.h
   local map = self.world.map
 
-  local xmin = self.world.offset
-  local xmax = yesno(map, self.world.stoppoint, 127)
-  local ymin = -6
-  local ymax = 64
+  local xmin, xmax, ymin, ymax = self:bounds()
 
   if map then
     -- check for obstacles
@@ -293,18 +296,14 @@ function mob:trymove(dx, dy)
       end
     end
 
-    if obstacle(sx-1, nil, sy, sy2) then --left
-      xmin = (sx-1)*8+8
-    end
-    if obstacle(sx+1, nil, sy, sy2) then --right
-      xmax = (sx+1)*8
-    end
-    if obstacle(sx, sx2, sy-1) then --top
-      ymin = (sy-1)*8+8
-    end
-    if obstacle(sx, sx2, sy+1) then --bottom
-      ymax = (sy+1)*8
-    end
+    -- left
+    if (obstacle(sx-1, nil, sy, sy2)) xmin = (sx-1)*8+8
+    --right
+    if (obstacle(sx+1, nil, sy, sy2)) xmax = (sx+1)*8
+    --top
+    if (obstacle(sx, sx2, sy-1)) ymin = (sy-1)*8+8
+    --bottom
+    if (obstacle(sx, sx2, sy+1)) ymax = (sy+1)*8
   end
 
   return bound(dx, xmin-left, xmax-right), bound(dy, ymin-top, ymax-bottom)
