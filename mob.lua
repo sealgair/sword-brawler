@@ -397,8 +397,11 @@ function mob:connectattack(heavy)
   local hits = self:collides()
   local str = self.str
   if (heavy) str *= 1.5
+  local h=0
   for hit in all(hits) do
     hit:hit(str, self)
+    h+=1
+    if (h > ceil(str)) break
   end
   if heavy and #hits <= 0 then
     self:transition("miss")

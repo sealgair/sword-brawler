@@ -143,7 +143,7 @@ purpleplayer = player.subclass{
     dying=dyinganim(15),
   },
   withsprites=weaponsprites(range(24,30)),
-  str=2,
+  str=1,
   spd=5,
   def=1,
   rng=8,
@@ -164,7 +164,7 @@ redplayer = player.subclass{
     return {s=s, w=2}
   end)),
   str=2,
-  spd=3,
+  spd=2,
   def=2,
   rng=12,
 }
