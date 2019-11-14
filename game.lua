@@ -14,6 +14,7 @@ gamesm = timedstatemachine.subclass{
   choose= {
     adventure= { to= adventure }
     survival= { to= survival }
+    duel= { to= duel }
     timeout= { to= demo }
   }
   adventure= {
@@ -22,12 +23,20 @@ gamesm = timedstatemachine.subclass{
   survival= {
     exit= { to= demo }
   }
+  duel= {
+    exit= { to= demo }
+  }
   ]]),
   timeouts=parse_pion([[
     demo= 30
     scores= 30
     choose= 180
   ]]),
+  modes={
+    "adventure",
+    "survival",
+    "duel",
+  }
 }
 
 function gamesm:init()
@@ -37,7 +46,10 @@ function gamesm:init()
 end
 
 function gamesm:spawnplayer(ptype, p)
-  ptype(self.world, p, self.world.offset+10, 60 + (10*p))
+  local player = ptype(self.world, p, self.world.offset+10, 60 + (10*p))
+  if self.state == "duel" then
+    player.team = player.name
+  end
 end
 
 function gamesm:update_scores()
@@ -48,15 +60,26 @@ end
 
 function gamesm:enter_choose()
   -- TODO: save this
-  self.adventure = true
+  self.mode = 1
+  self.choose_cooldown = 0.5
 end
 
 function gamesm:update_choose()
   for p=0,3 do
-    if (btnp(⬇️, p) or btnp(⬆️, p)) self.adventure = not self.adventure; break
+    if btnp(⬇️, p) then
+      self.mode += 1
+    end
+    if btnp(⬆️, p) then
+      self.mode -= 1
+    end
+    self.mode = wrap(self.mode, 1, #self.modes)
   end
-  for p=0,3 do
-    if (btnp(🅾️, p) or btnp(❎, p)) self:transition(yesno(self.adventure, "adventure", "survival"))
+  if self.choose_cooldown > 0 then
+    self.choose_cooldown -= dt
+  else
+    for p=0,3 do
+      if (btnp(🅾️, p) or btnp(❎, p)) self:transition(self.modes[self.mode])
+    end
   end
 end
 
@@ -77,6 +100,14 @@ end
 
 function gamesm:update_adventure()
   self:update_game()
+end
+
+function gamesm:update_duel()
+  self:update_game()
+end
+
+function gamesm:enter_duel()
+  self.world = world(rndchoice(planets))
 end
 
 function gamesm:enter_survival()
@@ -125,9 +156,14 @@ function gamesm:draw_adventure()
   hud:draw()
 end
 
+function gamesm:draw_duel()
+  self.world:draw()
+  hud:draw()
+end
+
 function gamesm:draw_demo()
   self.world:draw()
-  rectfill(0,0, 128,16, 5)
+  rectfill(0,0, 128,16, 1)
   rect(0,0, 127,16, 10)
   rect(1,1, 126,15, 9)
 
@@ -137,21 +173,20 @@ end
 
 function gamesm:draw_choose()
   self:draw_demo()
-  rectfill(32,32,96,96, 0)
-  rect(32,32,95,95, 10)
-  rect(33,33,95,95, 9)
+  rectfill(32,50,96,78, 1)
+  rect(31,49,97,79, 9)
+  rect(30,48,98,80, 10)
 
-  cursor(47, 59)
-  if self.adventure then
-    color(10)
-    print("> adventure")
-    color(9)
-    print("  survival")
-  else
-    color(9)
-    print("  adventure")
-    color(10)
-    print("> survival")
+  cursor(44, 55)
+  color(9)
+  for mode in all(self.modes) do
+    if mode == self.modes[self.mode] then
+      color(10)
+      print(">"..mode)
+      color(9)
+    else
+      print(" "..mode)
+    end
   end
 end
 
