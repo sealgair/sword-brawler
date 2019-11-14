@@ -64,12 +64,6 @@ function chooser:update()
       scores[self.p].tries = 0
       scores[self.p].coins = 0
     end
-  elseif self.state == 'gameover' then
-    if self.timer > 0 then
-      self.timer -= dt
-    else
-      self.state = "waiting"
-    end
   end
 end
 
@@ -124,12 +118,15 @@ function chooser:draw_gameover(x, y)
   print("the end", x+3, 10)
 end
 
-hud = {
+hud = class{
   sprite=sprite{s=64, w=4, h=2},
   meeple=subsprite(68, 0, 0, 4, 4),
   coin=subsprite(68, 0, 4, 4, 4),
-  choosers=lmap(range(1,4), chooser),
 }
+
+function hud:init()
+  self.choosers=lmap(range(1,4), chooser)
+end
 
 function hud:draw()
   for p=1,4 do
