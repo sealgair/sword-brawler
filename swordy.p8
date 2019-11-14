@@ -6,7 +6,6 @@ __lua__
 
 #include settings.lua
 #include utils.lua
-#include ellipse.lua
 #include sprites.lua
 #include statemachine.lua
 #include mob.lua
