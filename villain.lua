@@ -35,7 +35,7 @@ villain_bodies = {
     head=true,
     str=3,
     spd=1,
-    def=3,
+    def=4,
     rng=0,
   },
 }
@@ -178,7 +178,7 @@ function villain:think()
     local ydist = max(abs(ydiff) - self.h+1, 0)
     local tdist = cabdist(self, self.target)
 
-    -- TODO: try not to overlap other enemies
+    -- try not to overlap other enemies
     local mx, my = self:movefor(xdist, ydist, xdiff, ydiff)
     for hit in all(self:collides(true)) do
       if hit.target == self.target then
@@ -298,15 +298,28 @@ coward_villain = villain.subclass{
 
 function coward_villain:movefor(xdist, ...)
   local mx, my = villain.movefor(self, xdist, ...)
-  local tdist = cabdist(self, self.target)
+  local alone = true
+  local ganging = false
   for mob in all(self.world.mobs) do
-    if mob ~= self and mob.target == self.target and cabdist(self, mob) < tdist*1.5 then
-      -- has a friend
-      return mx, my
+    if mob ~= self and mob.target == self.target then
+      alone = false
+      if cabdist(mob, self.target) < 30 then
+        ganging = true
+        break
+      end
     end
   end
-  if (xdist <= self.rng+2) return mx, my -- turn and fight if cornered
-  return -1, 0 -- alone and scared
+  if alone then
+    -- turn and fight if cornered
+    if (not self.cornered and xdist <= self.rng+2) self.cornered = true
+    if (self.cornered) return mx, my
+    return -1, 0 -- alone and scared
+  elseif not ganging and xdist < 16 then
+    -- approach cautiously
+    return 0,0
+  end
+  -- otherwise, get 'em
+  return mx, my
 end
 
 -- white villain: cunning: tries to parry
