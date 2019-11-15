@@ -4,14 +4,22 @@ planets = {
   {
     globe=sprite(69),
     ground=15,
+    sky=14,
   },
   {
     globe=sprite(70),
     ground=4,
+    sky=12,
   },
   {
     globe=sprite(71),
     ground=3,
+    sky=12,
+  },
+  {
+    globe=sprite(0),
+    ground=5,
+    sky=1,
   },
 }
 
@@ -25,7 +33,7 @@ world = class{
 }
 
 function world:init(planet, map)
-  self.planet = planet
+  self.planet = planet or planets[flr(rnd(3))]
   self.map = map
   self.offset = 0
   self.stoppoint = 127
@@ -44,9 +52,9 @@ function world:init(planet, map)
 end
 
 function world:draw_sky()
-  rectfill(0,0,127,127,12)
+  rectfill(0,0,127,127, self.planet.sky)
 
-  if self.planet then
+  if self.planet ~= planets[4] then
     -- draw planets
     local pl = find(self.planet, planets)
     for i=-1,1,2 do
@@ -66,8 +74,6 @@ function world:draw()
     m:draw()
   end
   camera()
-
-  -- TODO: go arrow if you haven't moved in a bit
 
   --debug
   -- color(8)
@@ -124,5 +130,21 @@ function world:update()
         end
       end
     end)
+  end
+end
+
+function world:clear()
+  return self.offset >= 890 and #self.mobs == count(players)
+end
+
+function world:advance()
+  self.map += 1
+  self.offset = 0
+  self.planet = planets[self.map+1]
+  self.mobs = {}
+  for i, player in pairs(players) do
+    player.x = 10
+    player.y = 60 + (10*i)
+    add(self.mobs, player)
   end
 end

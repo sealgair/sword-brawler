@@ -19,6 +19,7 @@ gamesm = timedstatemachine.subclass{
   }
   adventure= {
     gameover= { to= gameover }
+    win= { to= victory }
   }
   survival= {
     gameover= { to= gameover }
@@ -27,7 +28,10 @@ gamesm = timedstatemachine.subclass{
     gameover= { to= gameover }
   }
   gameover= {
-    timeout= { to= demo }
+    timeout= { to= scores }
+  }
+  victory= {
+    timeout= { to= scores }
   }
   ]]),
   timeouts=parse_pion([[
@@ -35,6 +39,7 @@ gamesm = timedstatemachine.subclass{
     scores= 30
     choose= 180
     gameover= 5
+    victory= 10
   ]]),
   modes={
     "adventure",
@@ -111,6 +116,21 @@ end
 
 function gamesm:update_adventure()
   self:update_game()
+  if self.clear then
+    self.clear -= dt
+    if self.clear <= 0 then
+      self.world:advance()
+      self.clear = nil
+    end
+  else
+    if self.world:clear() then
+      if self.world.map >= 3 then
+        self:transition("win")
+      else
+        self.clear = 4
+      end
+    end
+  end
 end
 
 
@@ -120,12 +140,12 @@ end
 
 function gamesm:enter_duel()
   self.hud = hud()
-  self.world = world(rndchoice(planets))
+  self.world = world()
 end
 
 function gamesm:enter_survival()
   self.hud = hud()
-  self.world = world(rndchoice(planets))
+  self.world = world()
   self.villain_rate = {3,5}
   self.vtime = 0.1
   self.max_villains=5
@@ -167,7 +187,22 @@ end
 
 function gamesm:draw_adventure()
   self.world:draw()
+  if self.clear then
+    if self.clear < 3 then
+      self:draw_fade((3-self.clear)/2)
+    end
+
+    local x, y = 54,62
+    color(9)
+    forbox(x-1,y-1,2,2, function(x,y)
+      print("clear", x,y)
+    end)
+    color(8)
+    print("clear", x,y)
+  end
   self.hud:draw()
+
+  -- TODO: go arrow if you haven't moved in a bit, but could
 end
 
 function gamesm:draw_duel()
@@ -204,6 +239,15 @@ function gamesm:draw_choose()
   end
 end
 
+function gamesm:draw_fade(f)
+  f = flr(f*8)
+  for x=0,127,8 do
+    for i=0,f do
+      line(x+i, 0, x+i, 128, 0)
+    end
+  end
+end
+
 function gamesm:enter_gameover()
   self.fade = -0.25
 end
@@ -215,9 +259,7 @@ end
 function gamesm:draw_gameover()
   if self.fade > 0 then
     local f = flr(self.fade*8)
-    for x=0,127,8 do
-      line(x+f, 0, x+f, 128, 0)
-    end
+    self:draw_fade(f)
   end
 
   local x, y = 44, 62
@@ -227,6 +269,28 @@ function gamesm:draw_gameover()
   end)
   color(9)
   print("game  over", x, y)
+end
+
+function gamesm:enter_victory()
+  self.fade = -0.5
+end
+
+function gamesm:update_victory()
+  self.fade = min(2, self.fade+dt)
+end
+
+function gamesm:draw_victory()
+  if self.fade > 0 then
+    self:draw_fade(self.fade/2)
+  end
+
+  local x, y = 48, 62
+  color(10)
+  forbox(x-1,y-1,2,2, function(x,y)
+    print("you won!", x, y)
+  end)
+  color(12)
+  print("you won!", x, y)
 end
 
 -- extra menu items
