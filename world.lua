@@ -7,11 +7,11 @@ planets = {
   },
   {
     globe=sprite(70),
-    ground=11,
+    ground=4,
   },
   {
     globe=sprite(71),
-    ground=13,
+    ground=3,
   },
 }
 
