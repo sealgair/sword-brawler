@@ -73,7 +73,7 @@ villain = mob.subclass{
   vpalette=villain_palettes.yellow,
   skipoutline={7},
   withskipoutline={12,14,15},
-  atkcooldown={0.5,2},
+  atkcooldown={0.125,1},
   attackrate=0.3,
   reflexes=0.3,
 }
@@ -147,7 +147,7 @@ end
 function villain:reactto(inrange, xdiff, ydiff)
   if inrange then
     if self.atkcool <= 0 then
-      if rnd() < self.attackrate  then
+      if not self:targetlooking() or rnd() < self.attackrate  then
         self:transition("attack")
       end
       self.atkcool = self.atkcooldown[1] + rnd(self.atkcooldown[2])
@@ -201,7 +201,7 @@ end
 aggro_villain = villain.subclass{
   vpalette=villain_palettes.red,
   attackrate=0.9,
-  atkcooldown={0.25,1},
+  atkcooldown={0,0.25},
 }
 
 function aggro_villain:enter_defend(from)

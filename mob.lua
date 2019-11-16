@@ -268,45 +268,44 @@ end
 
 function mob:bounds()
   return self.world.offset,
-         yesno(map, self.world.stoppoint, 127),
-         -6, 64
+         self.world.stoppoint-7,
+         -self.h/2, 56
 end
 
 function mob:trymove(dx, dy)
-  local left = self.x
-  local right = left+self.w
-  local top = self.y-64
-  local bottom = top+self.h
-  local map = self.world.map
+  local m = self.world.map
+  local h = self.h/2
+  if m then
+    if dx ~= 0 then
+      local tox = self.x
+      if (dx > 0) tox+=self.w -- moving right
 
-  local xmin, xmax, ymin, ymax = self:bounds()
-
-  if map then
-    -- check for obstacles
-    local sx = flr(left/8)
-    local sx2 = flr((right-1)/8)
-    local sy = map*8 + flr(top/8)
-    local sy2 = map*8 + flr((bottom-1)/8)
-
-    function obstacle(x1, x2, y1, y2)
-      for x in all{x1, x2 or x1} do
-        for y in all{y1, y2 or y1} do
-          if (fmget(x, y, self.world.flags.obstacle)) return true
+      forbox(tox, self.y-64+1+h, dx, h-2, function(x, y)
+        if fmget(flr(x/8), flr(y/8)+8*m, 1) then
+          dx = x-tox
+          return true
         end
-      end
+      end)
     end
 
-    -- left
-    if (obstacle(sx-1, nil, sy, sy2)) xmin = (sx-1)*8+8
-    --right
-    if (obstacle(sx+1, nil, sy, sy2)) xmax = (sx+1)*8
-    --top
-    if (obstacle(sx, sx2, sy-1)) ymin = (sy-1)*8+8
-    --bottom
-    if (obstacle(sx, sx2, sy+1)) ymax = (sy+1)*8
+    if dy ~= 0 then
+      local toy = self.y+h
+      if (dy > 0) toy+=h -- moving down
+
+      forbox(self.x+1, toy, self.w-2, dy, function(x, y)
+        if fmget(flr(x/8), flr((y-64)/8)+8*m, 1) then
+          dy = y-toy
+          return true
+        end
+      end)
+    end
   end
 
-  return bound(dx, xmin-left, xmax-right), bound(dy, ymin-top, ymax-bottom)
+  local l, r, t, b = self:bounds()
+  dx = bound(self.x+dx, l, r)-self.x
+  dy = bound(self.y+dy, t+64, b+64)-self.y
+
+  return dx, dy
 end
 
 function mob:update()

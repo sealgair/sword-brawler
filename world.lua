@@ -33,7 +33,7 @@ world = class{
 }
 
 function world:init(planet, map)
-  self.planet = planet or planets[flr(rnd(3))]
+  self.planet = planet or planets[ceil(rnd(3))]
   self.map = map
   self.offset = 0
   self.stoppoint = 127

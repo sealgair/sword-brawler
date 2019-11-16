@@ -111,7 +111,7 @@ end
 
 function gamesm:enter_adventure()
   self.hud = hud()
-  self.world = world(planets[1], 0)
+  self.world = world(planets[2], 1)
 end
 
 function gamesm:update_adventure()
