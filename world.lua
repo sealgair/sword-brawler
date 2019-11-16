@@ -103,7 +103,7 @@ function world:update()
 
     function spawn(s, x, y)
       local villain = self.spawntypes[s]
-      villain.color(self, x*8, y*8+64, villain.species, rndchoice(villain_weapons))
+      villain.color(self, x*8, (y-self.map*8)*8+64, villain.species, rndchoice(villain_weapons))
     end
 
     if wasoffset ~= self.offset and self.offset == self.stoppoint-127 then
