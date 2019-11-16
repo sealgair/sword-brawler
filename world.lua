@@ -36,7 +36,7 @@ function world:init(planet, map)
   self.planet = planet or planets[ceil(rnd(3))]
   self.map = map
   self.offset = 0
-  self.stoppoint = 127
+  self.stoppoint = 0
   self.mobs = {}
   self.spawned = {}
   self.spawntypes={}
@@ -85,7 +85,7 @@ function world:update()
     m:update()
   end
   if self.map then
-    if self.offset > self.stoppoint-128 and #self.mobs == count(players) and count(players) > 0 then
+    if self.stoppoint == 0 or (self.offset > self.stoppoint-128 and #self.mobs == count(players) and count(players) > 0) then
       local x
       for i=flr(self.stoppoint/8),128 do
         x=i

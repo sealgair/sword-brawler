@@ -281,7 +281,7 @@ function mob:trymove(dx, dy)
       if (dx > 0) tox+=self.w -- moving right
 
       forbox(tox, self.y-64+1+h, dx, h-2, function(x, y)
-        if fmget(flr(x/8), flr(y/8)+8*m, 1) then
+        if fmget(flr(x/8), flr(y/8)+8*m, self.world.flags.obstacle) then
           dx = x-tox
           return true
         end
@@ -293,7 +293,7 @@ function mob:trymove(dx, dy)
       if (dy > 0) toy+=h -- moving down
 
       forbox(self.x+1, toy, self.w-2, dy, function(x, y)
-        if fmget(flr(x/8), flr((y-64)/8)+8*m, 1) then
+        if fmget(flr(x/8), flr((y-64)/8)+8*m, self.world.flags.obstacle) then
           dy = y-toy
           return true
         end

@@ -108,10 +108,9 @@ function gamesm:update_demo()
   self:update_game()
 end
 
-
 function gamesm:enter_adventure()
   self.hud = hud()
-  self.world = world(planets[2], 1)
+  self.world = world(planets[1], 0)
 end
 
 function gamesm:update_adventure()
