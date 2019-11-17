@@ -5,11 +5,6 @@ gamesm = timedstatemachine.subclass{
   transitions=parse_pion([[
   demo= {
     start= { to= choose }
-    timeout= { to= scores }
-  }
-  scores= {
-    start= { to= choose }
-    timeout= { to= demo }
   }
   choose= {
     adventure= { to= adventure }
@@ -28,15 +23,13 @@ gamesm = timedstatemachine.subclass{
     gameover= { to= gameover }
   }
   gameover= {
-    timeout= { to= scores }
+    timeout= { to= demo }
   }
   victory= {
-    timeout= { to= scores }
+    timeout= { to= demo }
   }
   ]]),
   timeouts=parse_pion([[
-    demo= 30
-    scores= 30
     choose= 180
     gameover= 5
     victory= 10
@@ -73,12 +66,6 @@ function gamesm:update()
   timedstatemachine.update(self)
   for fx in all(self.effects) do
     if (not fx.sprite:advance(dt)) del(self.effects, fx)
-  end
-end
-
-function gamesm:update_scores()
-  for p=0,3 do
-    if (btnp(🅾️, p) or btnp(❎, p)) self:transition("start")
   end
 end
 
@@ -119,7 +106,6 @@ function gamesm:update_game()
 end
 
 function gamesm:update_demo()
-  self:update_scores()
   self:update_game()
 end
 
@@ -192,13 +178,6 @@ function gamesm:draw()
   for fx in all(self.effects) do
     fx.sprite:draw(fx.x, fx.y, fx.flipx, fx.flipy)
   end
-end
-
-function gamesm:draw_scores()
-  rectfill(0,0, 127,127, 0)
-  color(8)
-  print("high scores", 42, 10)
-  line(16, 16, 112, 16)
 end
 
 function gamesm:draw_survival()
