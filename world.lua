@@ -110,7 +110,7 @@ function world:update()
       -- find previous [difficulty*2] villains and spawn them
       local spawned=0
       local o=flr(self.offset/8)-1
-      forbox(o, self.map*8, -o, 8, function(x,y)
+      forbox(o, self.map*8, -o, 7, function(x,y)
         local s = mget(x, y)
         if self.spawntypes[s] then
           spawn(s, x, y)
@@ -120,7 +120,7 @@ function world:update()
       end)
     end
 
-    forbox(flr(self.offset/8), self.map*8, 16, 8, function(x, y)
+    forbox(flr(self.offset/8), self.map*8, 16, 7, function(x, y)
       local s = mget(x, y)
       if self.spawntypes[s] then
         local spawnkey = x..','..y
