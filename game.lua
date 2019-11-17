@@ -45,7 +45,8 @@ gamesm = timedstatemachine.subclass{
     "adventure",
     "survival",
     "duel",
-  }
+  },
+  effects = {},
 }
 
 function gamesm:init()
@@ -58,6 +59,20 @@ function gamesm:spawnplayer(ptype, p)
   local player = ptype(self.world, p, self.world.offset+10, 60 + (10*p))
   if self.state == "duel" then
     player.team = player.name
+  end
+end
+
+function gamesm:addeffect(sprite, dur, x,y, flipx, flipy)
+  add(self.effects, {
+    sprite=sprite, x=x, y=y, flipx=flipx, flipy=flipy
+  })
+  sprite:start(dur)
+end
+
+function gamesm:update()
+  timedstatemachine.update(self)
+  for fx in all(self.effects) do
+    if (not fx.sprite:advance(dt)) del(self.effects, fx)
   end
 end
 
@@ -110,7 +125,7 @@ end
 
 function gamesm:enter_adventure()
   self.hud = hud()
-  self.world = world(planets[1], 0)
+  self.world = world(planets[2], 1)
 end
 
 function gamesm:update_adventure()
@@ -169,6 +184,13 @@ function gamesm:update_survival()
         self.vtime /= 2
       end
     end
+  end
+end
+
+function gamesm:draw()
+  timedstatemachine.draw(self)
+  for fx in all(self.effects) do
+    fx.sprite:draw(fx.x, fx.y, fx.flipx, fx.flipy)
   end
 end
 

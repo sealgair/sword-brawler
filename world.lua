@@ -36,10 +36,10 @@ function world:init(planet, map)
   self.planet = planet or planets[ceil(rnd(3))]
   self.map = map
   self.offset = 0
-  self.stoppoint = 0
+  self.stoppoint = yesno(map, 0, 127)
   self.mobs = {}
   self.spawned = {}
-  self.spawntypes={}
+  self.spawntypes = {}
   local vsprites = {128, 144, 176}
   for b=1,3 do
     for v=1,4 do

@@ -407,6 +407,14 @@ function mob:connectattack(heavy)
   else
     self:transition("strike")
   end
+  if #hits > 0 then
+    local eo = self.w + self.rng
+    if (self.flipped) eo *= -1
+    local s = animation(lmap(range(112,117), function(s)
+      return {s=s, pswap=yesno(heavy, {[12]=14}, {})}
+    end))
+    game:addeffect(s, 0.25, self.x+eo, self.y, self.flipped)
+  end
 end
 
 function mob:strike()

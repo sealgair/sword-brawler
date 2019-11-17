@@ -128,6 +128,7 @@ function animation:advance(dt)
   end
   self.sprite = self.sprites[i]
   self.join = self.sprite.join
+  return self.t > 0
 end
 
 function animation:draw(...)
