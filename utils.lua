@@ -6,16 +6,6 @@ end
 
 function wrap(v, low, high)
   if high == nil then
-    high = low
-    low = 1
-  end
-  if (v < low) return high
-  if (v > high) return low
-  return v
-end
-
-function fwrap(v, low, high)
-  if high == nil then
     high = low or 1
     low = 0
   end
@@ -153,18 +143,6 @@ function lmap(l, fn)
   return kmap(l, function(k,v) return k, fn(v) end)
 end
 
-function values(t)
-  local r = {}
-  for k,v in pairs(t) do
-    add(r, v)
-  end
-  return r
-end
-
-function invert(t)
-  return kmap(t, function(k,v) return v,k end)
-end
-
 function append(...)
   r = {}
   for t in all{...} do
@@ -217,17 +195,6 @@ function common(l)
   return mv
 end
 
--- swap keys & values of a table
-function invert(t, initial)
- local r={}
- i=initial or 1
- for k in all(t) do
-  r[k]=i
-  i+=1
- end
- return r
-end
-
 function insert(t, v, i)
   for j=#t,i,-1 do
     t[j+1] = t[j]
@@ -257,20 +224,6 @@ function bmask(a,b)
  else
  	return 1
  end
-end
-
-function concat(...)
-  local r = ""
-  for s in all{...} do
-    if s == nil then
-      r = r .."nil"
-    elseif type(s) == "boolean" then
-      r = r .. yesno(s, "true", "false")
-    else
-      r = r .. s
-    end
-  end
-  return r
 end
 
 -- class maker

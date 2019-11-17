@@ -16,3 +16,4 @@ btns={
 dt = 1/60
 friendlyfire = dget(savekeys.friendlyfire) ~= 0
 difficulty = 1  -- TODO: saved menu item
+start = 1
