@@ -6,11 +6,11 @@ end
 
 function wrap(v, low, high)
   if high == nil then
-    high = low or 1
-    low = 0
+    high = low
+    low = 1
   end
-  if (v < low) return (v-low)+high
-  if (v > high) return (v-high)+low
+  if (v < low) return high
+  if (v > high) return low
   return v
 end
 
