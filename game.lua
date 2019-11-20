@@ -106,6 +106,9 @@ function gamesm:update_game()
 end
 
 function gamesm:update_demo()
+  for p=0,3 do
+    if (btnp(🅾️, p) or btnp(❎, p)) self:transition("start")
+  end
   self:update_game()
 end
 
