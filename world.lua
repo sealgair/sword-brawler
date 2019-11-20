@@ -1,5 +1,7 @@
 -- world
 
+scores = lmap(range(1,4), function() return {tries=0, coins=0} end)
+
 planets = {
   {
     globe=sprite(69),
@@ -49,7 +51,7 @@ function world:init(planet, map)
       }
     end
   end
-  self.scores = lmap(range(1,4), function() return {tries=0, coins=0} end)
+  scores = lmap(range(1,4), function() return {tries=0, coins=0} end)
 end
 
 function world:draw_sky()

@@ -101,7 +101,12 @@ function gamesm:update_game()
   if #players > 0 then
     self.playing = true
   elseif self.playing then -- everyone has died
-    self:transition("gameover")
+    self.playing = false
+    local endstates = {waiting=true, gameover=true}
+    for chooser in all(self.hud.choosers) do
+      if (not endstates[chooser.state]) self.playing = true
+    end
+    if (not self.playing) self:transition("gameover")
   end
 end
 

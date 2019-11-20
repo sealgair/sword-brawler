@@ -21,7 +21,7 @@ function player:init(world, p, x, y)
   mob.init(self, world, x, y)
   self.p = p-1
   players[p] = self
-  self.score = world.scores[p]
+  self.score = scores[p]
   self.score.tries += 1
 end
 
