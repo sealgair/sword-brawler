@@ -178,9 +178,11 @@ end
 
 function gamesm:draw()
   timedstatemachine.draw(self)
+  camera(self.world.offset)
   for fx in all(self.effects) do
     fx.sprite:draw(fx.x, fx.y, fx.flipx, fx.flipy)
   end
+  camera()
 end
 
 function gamesm:draw_survival()
