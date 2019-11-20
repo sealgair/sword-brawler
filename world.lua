@@ -14,7 +14,7 @@ planets = {
   {
     globe=sprite(71),
     ground=3,
-    sky=12,
+    sky=13,
   },
   {
     globe=sprite(0),
