@@ -3,8 +3,6 @@ chooser = class{
   state='waiting',
 }
 
-respawn_cost = 25
-
 function chooser:init(p)
   self.p = p
   self.buttons = {}
@@ -48,6 +46,8 @@ function chooser:update()
     self.timer = 10
     game:spawnplayer(player_choices[self.choice], self.p)
   elseif self.state == 'respawn' then
+    -- respawn is 25 at first, but doubles after every 4 deaths
+    local respawn_cost = 25 * 2^(flr(scores[self.p].tries/4))
     if scores[self.p].coins >= respawn_cost and self.timer > 0 then
       self.timer -= dt
       if self.timer < 9 then
