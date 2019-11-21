@@ -170,8 +170,7 @@ function gamesm:update_survival()
     if self.vtime <= 0 then
       local vtype = rndchoice(villains, rnd()*rnd())
       local body = rndchoice(villain_bodies, rnd()*rnd())
-      local weapon = rndchoice(villain_weapons)
-      vtype(self.world, flr(rnd(2))*139-10, rnd(64)+64, body, weapon)
+      vtype(self.world, flr(rnd(2))*139-10, rnd(64)+64, body)
       self.vtime = self.villain_rate[1] + rnd(self.villain_rate[2])
       if vtype == coward_villain and #self.world.mobs - count(players) <= 1 then
         -- make sure a friend comes soon

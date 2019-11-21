@@ -1,45 +1,5 @@
 -- villains
 
-villain_bodies = {
-  { -- snake
-    sprites={
-      standing=128,
-      walking=range(128,130),
-      dodging=131,
-      dying=dyinganim(132),
-    },
-    str=2,
-    spd=2,
-    def=2,
-    rng=-1,
-  },
-  { -- gremlin
-    sprites={
-      standing=144,
-      walking=range(144,146),
-      dodging={147,148},
-      dying=dyinganim(149),
-    },
-    str=1,
-    spd=3,
-    def=1,
-    rng=-2,
-  },
-  { -- giant
-    sprites={
-      standing=176,
-      walking=range(176,179),
-      dodging=180,
-      dying=dyinganim(181),
-    },
-    head=true,
-    str=3,
-    spd=1,
-    def=4,
-    rng=0,
-  },
-}
-
 villain_weapons = {
   { -- dagger
     withsprites=weaponsprites(range(136,142)),
@@ -57,6 +17,49 @@ villain_weapons = {
     str=3,
     def=-1,
     rng=8,
+  },
+}
+
+villain_bodies = {
+  { -- snake
+    sprites={
+      standing=128,
+      walking=range(128,130),
+      dodging=131,
+      dying=dyinganim(132),
+    },
+    str=2,
+    spd=2,
+    def=2,
+    rng=-1,
+    weapons = {1, 2, 3},
+  },
+  { -- gremlin
+    sprites={
+      standing=144,
+      walking=range(144,146),
+      dodging={147,148},
+      dying=dyinganim(149),
+    },
+    str=1,
+    spd=3,
+    def=1,
+    rng=-2,
+    weapons = {1, 2},
+  },
+  { -- giant
+    sprites={
+      standing=176,
+      walking=range(176,179),
+      dodging=180,
+      dying=dyinganim(181),
+    },
+    head=true,
+    str=3,
+    spd=1,
+    def=4,
+    rng=0,
+    weapons = {2, 3},
   },
 }
 
@@ -78,16 +81,16 @@ villain = mob.subclass{
   reflexes=0.3,
 }
 
-function villain:init(world, x, y, body, weapon)
+function villain:init(world, x, y, body)
   local stats = {'str', 'spd', 'def', 'rng'}
   if (body) update(self, body)
-  if weapon then
-    for stat in all(stats) do
-      self[stat] += (weapon[stat] or 0)
-      weapon[stat] = nil
-    end
-    update(self, weapon)
+
+  local weapon = copy(villain_weapons[rndchoice(body.weapons)])
+  for stat in all(stats) do
+    self[stat] += (weapon[stat] or 0)
+    weapon[stat] = nil
   end
+  update(self, weapon)
   if self.head == true then
     self.head = rndchoice(range(160,164))
   end
@@ -117,7 +120,7 @@ end
 -- function villain:draw(...)
 --   -- debug
 --   color(7)
---   print(self.state, self.x, self.y-7)
+--   print(self.rng .. ":" .. (self.mx or ""), self.x, self.y+9)
 --   mob.draw(self, ...)
 -- end
 
@@ -139,7 +142,7 @@ end
 
 function villain:movefor(xdist, ydist, xdiff, ydiff)
   local mx, my = 0, 0
-  if (abs(ydiff) > 2) my = 1
+  if (ydiff > 2) my = 1
   if (xdist >= self.rng) mx = 1
   return mx, my
 end
