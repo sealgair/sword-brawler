@@ -106,11 +106,20 @@ function analyze(tokens, i)
       k = sub(token, 1, #token-1)
     elseif token == "{" then
       v, i = analyze(tokens, i)
-      r[k] = v
+      if k then
+        r[k] = v
+      else
+        add(r, v)
+      end
     elseif token == "}" then
       return r, i
     else
-      r[k] = tonum(token) or token
+      v = tonum(token) or token
+      if k then
+        r[k] = v
+      else
+        add(r, v)
+      end
     end
   end
   return r, i

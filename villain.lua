@@ -1,24 +1,27 @@
 -- villains
 
-villain_weapons = {
-  { -- dagger
-    withsprites=weaponsprites(range(136,142)),
-    spd=2,
-    rng=4,
-  },
-  { -- club
-    withsprites=weaponsprites(range(152,158)),
-    str=2,
-    spd=1,
-    rng=6,
-  },
-  { -- spiney sword
-    withsprites=weaponsprites(range(168,174)),
-    str=3,
-    def=-1,
-    rng=8,
-  },
-}
+villain_weapons = parse_pion([[
+ dagger= {
+   ws= { s= 136 e= 143 }
+   spd= 2
+   rng= 4
+ }
+ club= {
+   ws= { s= 152 e= 158 }
+   str= 2
+   spd= 1
+   rng= 6
+ }
+ flamberge= {
+   ws= { s= 168 e= 174 }
+   str= 3
+   def= -1
+   rng= 8
+ }
+]])
+for k, vw in pairs(villain_weapons) do
+  vw.withsprites = weaponsprites(range(vw.ws.s, vw.ws.e))
+end
 
 villain_bodies = {
   { -- snake
@@ -32,7 +35,7 @@ villain_bodies = {
     spd=2,
     def=2,
     rng=-1,
-    weapons = {1, 2, 3},
+    weapons = {'dagger', 'club', 'flamberge'},
   },
   { -- gremlin
     sprites={
@@ -45,7 +48,7 @@ villain_bodies = {
     spd=3,
     def=1,
     rng=-2,
-    weapons = {1, 2},
+    weapons = {'dagger', 'club'},
   },
   { -- giant
     sprites={
@@ -59,17 +62,17 @@ villain_bodies = {
     spd=1,
     def=4,
     rng=0,
-    weapons = {2, 3},
+    weapons = {'club', 'flamberge'},
   },
 }
 
-villain_palettes = {
-  red={},
-  yellow={[8]=10, [9]=7, [4]=9, [10]=8},
-  green={[8]=3, [9]=11, [4]=1, [10]=12},
-  brown={[8]=4, [9]=9, [4]=2, [10]=8},
-  white={[8]=6, [9]=7, [4]=5, [10]=2, [14]=13},
-}
+villain_palettes = parse_pion([[
+  red= { }
+  yellow= { 8= 10 9= 7 4= 9 10= 8 }
+  green= { 8= 3 9= 11 4= 1 10= 12 }
+  brown= { 8= 4 4= 2 10= 8 }
+  white= { 8= 3 9= 7 4= 5 10= 2 14=13 }
+]])
 
 villain = mob.subclass{
   team="villains",

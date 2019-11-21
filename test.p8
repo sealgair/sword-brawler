@@ -30,6 +30,8 @@ function testpion()
  		2= poop
  	}
  	g= { str= ing }
+		e= {}
+		f= { 1 2 3 }
  ]]
  printtable(parse_pion(s))
 end
@@ -46,7 +48,7 @@ function testsort()
 end
 
 function _init()
-	testsort()
+	testpion()
 end
 
 __gfx__
