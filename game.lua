@@ -4,29 +4,29 @@ gamesm = timedstatemachine.subclass{
   state="demo",
   transitions=parse_pion([[
   demo= {
-    start= { to= choose }
+    start= { choose }
   }
   choose= {
-    adventure= { to= adventure }
-    survival= { to= survival }
-    duel= { to= duel }
-    timeout= { to= demo }
+    adventure= { adventure }
+    survival= { survival }
+    duel= { duel }
+    timeout= { demo }
   }
   adventure= {
-    gameover= { to= gameover }
-    win= { to= victory }
+    gameover= { gameover }
+    win= { victory }
   }
   survival= {
-    gameover= { to= gameover }
+    gameover= { gameover }
   }
   duel= {
-    gameover= { to= gameover }
+    gameover= { gameover }
   }
   gameover= {
-    timeout= { to= demo }
+    timeout= { demo }
   }
   victory= {
-    timeout= { to= demo }
+    timeout= { demo }
   }
   ]]),
   timeouts=parse_pion([[

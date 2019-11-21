@@ -25,86 +25,86 @@ mob = timedstatemachine.subclass{
   state="spawned",
   transitions=parse_pion([[
     spawned= {
-      timeout= { to= defend }
+      timeout= { defend }
     }
     defend= {
-      attack= { to= winding }
-      hit= { to= staggered }
-      heavyhit= { to= stunned }
-      backstab= { to= dying }
-      parry= { to= parrying }
-      dodge= { to= dodging }
-      parried= { to= stunned }
-      defended= { to= staggered }
+      attack= { winding }
+      hit= { staggered }
+      heavyhit= { stunned }
+      backstab= { dying }
+      parry= { parrying }
+      dodge= { dodging }
+      parried= { stunned }
+      defended= { staggered }
     }
     staggered= {
-      timeout= { to= defend }
-      dodge= { to= dodging }
-      hit= { to= stunned }
-      heavyhit= { to= dying }
-      backstab= { to= dying }
+      timeout= { defend }
+      dodge= { dodging }
+      hit= { stunned }
+      heavyhit= { dying }
+      backstab= { dying }
     }
     stunned= {
-      timeout= { to= defend }
-      hit= { to= dying }
-      heavyhit= { to= dying }
-      backstab= { to= dying }
+      timeout= { defend }
+      hit= { dying }
+      heavyhit= { dying }
+      backstab= { dying }
     }
     overextended= {
-      timeout= { to= defend }
-      hit= { to= dying }
-      heavyhit= { to= dying }
-      backstab= { to= dying }
+      timeout= { defend }
+      hit= { dying }
+      heavyhit= { dying }
+      backstab= { dying }
     }
     winding= {
-      timeout= { to= holding callback= unwind }
-      hit= { to= dying }
-      heavyhit= { to= dying }
-      backstab= { to= dying }
+      timeout= { holding callback= unwind }
+      hit= { dying }
+      heavyhit= { dying }
+      backstab= { dying }
     }
     holding= {
-      release= { to= attacking }
-      smash= { to= smashing }
-      cancel= { to= defend }
-      hit= { to= dying }
-      heavyhit= { to= dying }
-      backstab= { to= dying }
+      release= { attacking }
+      smash= { smashing }
+      cancel= { defend }
+      hit= { dying }
+      heavyhit= { dying }
+      backstab= { dying }
     }
     dodging= {
-      timeout= { to= recover }
+      timeout= { recover }
     }
     recover= {
-      timeout= { to= defend }
+      timeout= { defend }
     }
     parrying= {
-      timeout= { to= defend }
-      hit= { to= defend callback= parry }
-      heavyhit= { to= defend callback= parry }
-      backstab= { to= dying }
+      timeout= { defend }
+      hit= { defend callback= parry }
+      heavyhit= { defend callback= parry }
+      backstab= { dying }
     }
     attacking= {
-      timeout= { to= striking callback= strike }
-      hit= { to= dying }
-      heavyhit= { to= dying }
-      backstab= { to= dying }
+      timeout= { striking callback= strike }
+      hit= { dying }
+      heavyhit= { dying }
+      backstab= { dying }
     }
     smashing= {
-      timeout= { to= striking callback= smash }
-      hit= { to= dying }
-      heavyhit= { to= dying }
-      backstab= { to= dying }
+      timeout= { striking callback= smash }
+      hit= { dying }
+      heavyhit= { dying }
+      backstab= { dying }
     }
     striking= {
-      miss= { to= overextended }
-      strike= { to= defend }
-      hit= { to= dying }
-      heavyhit= { to= dying }
-      backstab= { to= dying }
-      parried= { to= stunned }
-      defended= { to= staggered }
+      miss= { overextended }
+      strike= { defend }
+      hit= { dying }
+      heavyhit= { dying }
+      backstab= { dying }
+      parried= { stunned }
+      defended= { staggered }
     }
     dying= {
-      timeout= { to= dead callback= die }
+      timeout= { dead callback= die }
     }
   ]]),
   timeouts=parse_pion([[
@@ -231,9 +231,6 @@ function mob:draw()
   if self.head and self.state ~= "dying" then
     self.head:draw_inline(self.x, self.y-8, self.flipped)
   end
-  -- debug
-  -- local hb = self:hitbox()
-  -- rect(hb.x, hb.y, hb.x+hb.w, hb.y+hb.h, 8)
 end
 
 
@@ -428,16 +425,6 @@ end
 function mob:addscore() end
 
 function mob:hit(atk, other)
-  --[[
-  TODO:
-  * attack superiority: str+atkstr - def:
-    * <-1 atk stagger
-    * <=0 both stagger (can’t attack, can defend)
-    * 1 defender staggers
-    * 2 defender stunned
-    * 3 defender knocked down
-    * 4 defender killed
-  ]]
   local tr = 'hit'
   if self.flipped == other.flipped or atk > self.def+2 then
     tr = 'backstab'

@@ -31,11 +31,11 @@ end
 function statemachine:dotransition(trans, ...)
   if self.state then
     if (self.exit_state) self:exit_state(self.state, ...)
-    if (self["exit_"..self.state]) self["exit_"..self.state](self, trans.to, ...)
+    if (self["exit_"..self.state]) self["exit_"..self.state](self, trans[1], ...)
   end
 
   local from = self.state
-  self.state = trans.to
+  self.state = trans[1]
   if (self.enter_state) self:enter_state(self.state, ...)
   if (self["enter_"..self.state]) self["enter_"..self.state](self, from, ...)
   if trans.callback ~= nil and self[trans.callback] ~= nil then
@@ -59,7 +59,7 @@ end
 
 function timedstatemachine:dotransition(trans, timeout, ...)
   if timeout == nil then
-    timeout = self.timeouts[trans.to] or 0
+    timeout = self.timeouts[trans[1]] or 0
   end
   self.statetimer = timeout or 0
   statemachine.dotransition(self, trans, timeout, ...)

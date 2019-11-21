@@ -120,13 +120,6 @@ function villain:update()
   end
 end
 
--- function villain:draw(...)
---   -- debug
---   color(7)
---   print(self.rng .. ":" .. (self.mx or ""), self.x, self.y+9)
---   mob.draw(self, ...)
--- end
-
 function villain:enter_defend(from)
   self.defcool = self.defcooldown
 end
